@@ -6,7 +6,6 @@ in vec3 v2fColor;
 
 // uniform = same for all fragments
 // from location 0, all fragments will have the same base colour
-layout( location = 0 ) uniform vec3 uBaseColor;
 
 layout( location = 0 ) out vec3 oColor;
 

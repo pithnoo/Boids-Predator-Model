@@ -1,10 +1,5 @@
 #include "boid.hpp"
-
 #include <GL/glext.h>
-#include <iostream>
-#include <math.h>
-
-#include "../vmlib/mat33.hpp"
 
 Boid::Boid(float d, float s){
   minDistance = d;
@@ -27,37 +22,56 @@ Boid::Boid(float d, float s){
 			   );
   glEnableVertexAttribArray(0);
 
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
   // delete vbo, as it has now been stored in vao
   glDeleteBuffers(1, &posVBO);
 }
 
-void Boid::update(float dt){
+void Boid::update(ShaderProgram* prog, float dt){
   // calculate distances between screen boundaries
-  disX = (1280 - position.x) - position.x;
-  disY = (720 - position.y) - position.y;
 
-  if(disX <= minDistance || disY <= minDistance){
-	// rotate boid appropriately
-	rotation = std::tan(disY / disX);
-
-	// direction to move boid
-	speedX = cos(rotation) * speed;
-	speedY = sin(rotation) * speed;
+  if((10 - position.x) >= position.x){
+	disX = 10-position.x;
+  }
+  else{
+	disX = -position.x;
   }
 
-  position.x += speedX;
-  position.y += speedY;
+  if((10 - position.y) >= position.y) {
+	disY = 10-position.y;
+  }
+  else{
+	disY = -position.y;
+  }
+
+  float total = disX + disY;
+
+  disX /= total;
+  disY /= total;
+
+  rotation = std::tan(disY / disX);
+
+  position.x += speedX * 0.001f * dt;
+  position.y += speedY * 0.001f * dt;
+
+  // std::printf("%f %f\n", speedX, speedY); 
 
   // TODO: calculate acceleration against other neighbouring boids
 
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);
 
-  // pass transformation matrix to the vertex shader
-  glUniformMatrix3fv(0, 1, GL_TRUE, boidTransform.m);
+  glUseProgram(prog->programId());
 
   // draw the boid in environment
   glBindVertexArray(vao);
+
+  // pass transformation matrix to the vertex shader
+  glUniformMatrix3fv(0, 1, GL_TRUE, boidTransform.m);
+
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindVertexArray(0);
+
 }

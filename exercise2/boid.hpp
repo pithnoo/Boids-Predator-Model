@@ -3,13 +3,20 @@
 
 #include <glad/glad.h>
 
-#include "../vmlib/vec2.hpp"
 #include <vector>
+#include <GL/glext.h>
+#include <iostream>
+#include <math.h>
+
+#include "../vmlib/vec2.hpp"
+#include "../vmlib/mat33.hpp"
+#include "../support/program.hpp"
+
 
 class Boid {
 public:
   // central position of the boid
-  Vec2f position;
+  Vec2f position = {0.f, 0.f};
 
   // vector split of the resultant speed
   float speedX;
@@ -35,7 +42,7 @@ public:
   // initialise boid
   Boid(float d, float s);
 
-  void update(float dt);
+  void update(ShaderProgram* prog, float dt);
 
   // possible call function to get current position of boid
 

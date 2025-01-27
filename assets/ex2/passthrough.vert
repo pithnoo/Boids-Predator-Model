@@ -12,6 +12,9 @@ out vec3 v2fColor;
 
 void main()
 {
-  v2fColor = iColor;
-  gl_Position = transform * vec4( iPosition.xy, 0.0, 1.0 );
+  v2fColor = vec3(0, 0.5, 1);
+
+  // new position
+  vec3 tPosition = transform * vec3(iPosition.xy, 1.0);
+  gl_Position = vec4( tPosition.xy, 0.0, 1.0 );
 }

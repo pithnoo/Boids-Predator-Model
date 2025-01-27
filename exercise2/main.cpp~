@@ -20,8 +20,10 @@
 #include "../vmlib/mat22.hpp"
 #include "../vmlib/vec2.hpp"
 
+#include "boid.hpp"
+
 namespace {
-constexpr char const *kWindowTitle = "COMP3811 - GL Triangle";
+constexpr char const *kWindowTitle = "Boids Program";
 
 struct State_ {
   ShaderProgram *prog;
@@ -116,6 +118,7 @@ int main() try {
   std::printf("VERSION %s\n", glGetString(GL_VERSION));
   std::printf("SHADING_LANGUAGE_VERSION %s\n",
               glGetString(GL_SHADING_LANGUAGE_VERSION));
+  std::printf("test\n");
 
   // Ddebug output
 #if !defined(NDEBUG)
@@ -156,6 +159,9 @@ int main() try {
   // Create vertex buffers and VAO
   // TODO: create VBOs and VAO
 
+  Boid boid(3.0f, 3.0f);
+
+  /*
   static float const kPositions[] = {
     // middle triangle
     0.f, 0.05f,
@@ -209,6 +215,7 @@ int main() try {
   // clear buffers, as these have now been referenced on the VAO
   glDeleteBuffers(1, &colVBO);
   glDeleteBuffers(1, &posVBO);
+  */
 
   // Animation state
   auto last = Clock::now();
@@ -252,6 +259,9 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
+	boid.update(state.prog, dt);
+
+	/*
     glUseProgram(prog.programId());
 
     // defining the colour at each vertex
@@ -273,6 +283,7 @@ int main() try {
 
     // unbind shading program
     glUseProgram(0);
+	*/
 
     OGL_CHECKPOINT_DEBUG();
 

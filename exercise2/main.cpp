@@ -258,6 +258,10 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
+	boid.update(state.prog, dt);
+	std::printf("%f %f\n", boid.position.x, boid.position.y); 
+
+	/*
     glUseProgram(prog.programId());
 
     // defining the colour at each vertex
@@ -279,6 +283,7 @@ int main() try {
 
     // unbind shading program
     glUseProgram(0);
+	*/
 
     OGL_CHECKPOINT_DEBUG();
 
