@@ -32,15 +32,15 @@ Boid::Boid(float d, float s){
 void Boid::update(ShaderProgram* prog, float dt){
   // calculate distances between screen boundaries
 
-  if((10 - position.x) >= position.x){
-	disX = 10-position.x;
+  if((1280 - position.x) >= position.x){
+	disX = 1280-position.x;
   }
   else{
 	disX = -position.x;
   }
 
-  if((10 - position.y) >= position.y) {
-	disY = 10-position.y;
+  if((720 - position.y) >= position.y) {
+	disY = 720-position.y;
   }
   else{
 	disY = -position.y;
@@ -51,12 +51,15 @@ void Boid::update(ShaderProgram* prog, float dt){
   disX /= total;
   disY /= total;
 
-  rotation = std::tan(disY / disX);
+  // rotation = std::tan(disY / disX);
 
-  position.x += speedX * 0.001f * dt;
-  position.y += speedY * 0.001f * dt;
+  // position.x += speedX * 0.001f * dt;
+  // position.y += speedY * 0.001f * dt;
 
-  // std::printf("%f %f\n", speedX, speedY); 
+  position.x += 0;
+  position.y += 0;
+
+  //std::printf("%f %f\n", speedX, speedY); 
 
   // TODO: calculate acceleration against other neighbouring boids
 

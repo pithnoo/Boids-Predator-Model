@@ -160,66 +160,8 @@ int main() try {
 
   Boid boid(3.0f, 3.0f);
 
-  /*
-  static float const kPositions[] = {
-    // middle triangle
-    0.f, 0.05f,
-    -0.025f, -0.05f,
-    0.025f, -0.05f,
-  };
-
-  GLuint posVBO = 0;
-  glGenBuffers(1, &posVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, posVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(kPositions), kPositions, GL_STATIC_DRAW);
-  
-  static float const kColors[] = {
-    // middle triangle
-    1.f, 1.f, 1.f,
-    1.f, 1.f, 1.f,
-    1.f, 1.f, 1.f,
-  };
-
-  GLuint colVBO = 0;
-  glGenBuffers(1, &colVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, colVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(kColors), kColors, GL_STATIC_DRAW);
-
-  GLuint vao = 0;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-
-  glBindBuffer(GL_ARRAY_BUFFER, posVBO);
-  glVertexAttribPointer(
-			   0,
-			   2, GL_FLOAT, GL_FALSE,
-			   0,
-			   0
-			   );
-  glEnableVertexAttribArray(0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, colVBO);
-  glVertexAttribPointer(
-			   1,
-			   3, GL_FLOAT, GL_FALSE,
-			   0,
-			   0
-			   );
-  glEnableVertexAttribArray(1);
-
-  // unbind vertex array
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  // clear buffers, as these have now been referenced on the VAO
-  glDeleteBuffers(1, &colVBO);
-  glDeleteBuffers(1, &posVBO);
-  */
-
   // Animation state
   auto last = Clock::now();
-
-  float angle = 0.f;
 
   // Main loop
   while (!glfwWindowShouldClose(window)) {
@@ -248,10 +190,6 @@ int main() try {
     float dt = std::chrono::duration_cast<Secondsf>(now - last).count();
     last = now;
 
-    angle += dt * std::numbers::pi_v<float> * 0.3f;
-    if (angle >= 2.f * std::numbers::pi_v<float>)
-      angle -= 2.f * std::numbers::pi_v<float>;
-
     // Draw scene
     OGL_CHECKPOINT_DEBUG();
 
@@ -259,31 +197,8 @@ int main() try {
     glClear(GL_COLOR_BUFFER_BIT);
 
 	boid.update(state.prog, dt);
-	std::printf("%f %f\n", boid.position.x, boid.position.y); 
 
-	/*
-    glUseProgram(prog.programId());
-
-    // defining the colour at each vertex
-    static float const baseColor[] = { 0.f, 0.5f, 1.f, };
-
-    // location 0 in fragment shader stores the baseColor, and subsequently the output colour too
-    glUniform3fv(0, 1, baseColor);
-
-    // bind vao to obtain information aobut it
-    glBindVertexArray(vao);
-
-    // starting on vertex 0
-    // drawing three vertices, in order to draw the desired triangle
-    // we are also drawing in triangles
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    // unbind VAO
-    glBindVertexArray(0);
-
-    // unbind shading program
-    glUseProgram(0);
-	*/
+	std::printf("%f %f\r", boid.position.x, boid.position.y); 
 
     OGL_CHECKPOINT_DEBUG();
 
