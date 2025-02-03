@@ -66,16 +66,17 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
     }
   }
 
-  // for optimisation, we only need to take 3 neighbour boids here
   std::vector<Boid> neighbours;
   float dx, dy;
   float neighbourDistance;
 
+  // looping over neighbours
   for(auto &b : boids){
 	// skip boid that is in exact position
 	if(b.position == position)
 	  continue;
 
+	// for optimisation, we only need to take 3 neighbour boids here
 	if(neighbours.size() >= 3)
 	  break;
 
@@ -88,10 +89,18 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 	neighbourDistance = std::sqrt(dx + dy);
 
 	if(neighbourDistance <= boidRange){
-	  std::cout << "neighbour: " << neighbourDistance << std::endl;
+	  // std::cout << "neighbour: " << neighbourDistance << std::endl;
 	  neighbours.push_back(b);
 	}
   }
+
+  // seperation: ensure that boids steer to avoid their flock mates
+
+  // alignment: steer towards the average heading of the flock
+
+  // cohesion: steer the boid towards the local center of the flock
+
+  // take average acceleration of the 3
 
   // deciding the resulting acceleration and rotation
   position.x += acceleration.x;

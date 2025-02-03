@@ -42,7 +42,6 @@ public:
 
   void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt);
 
-  // possible call function to get current position of boid
 
 private:
   // minimum distance before rotating against boundary
