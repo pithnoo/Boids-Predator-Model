@@ -38,7 +38,7 @@ public:
   float speed;
 
   // initialise boid
-  Boid(float d, float s);
+  Boid();
 
   void update(ShaderProgram* prog, float dt);
 
@@ -46,7 +46,10 @@ public:
 
 private:
   // minimum distance before rotating against boundary
-  float minDistance;
+  float minDistance = 30.f;
+
+  // minimum distance between boids
+  float minSeperation = 5.f;
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.01f, 0.01f };

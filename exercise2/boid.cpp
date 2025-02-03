@@ -1,9 +1,6 @@
 #include "boid.hpp"
 
-Boid::Boid(float d, float s){
-  minDistance = d;
-  speed = s;
-
+Boid::Boid(){
   float x = std::rand() % 100 * 0.01f;
   float y = std::rand() % 100 * 0.01f;
   position = {x, y};
@@ -69,19 +66,15 @@ void Boid::update(ShaderProgram* prog, float dt){
     }
   }
 
-  // for normalising the acceleration vector
-  // float norm = std::sqrt(std::pow(acceleration.x, 2) + std::pow(acceleration.y, 2));
-  // float norm = acceleration.x + acceleration.y;
+  // TODO: calculate acceleration against other neighbouring boids
+  
 
   // deciding the resulting acceleration and rotation
   position.x += acceleration.x;
   position.y += acceleration.y;
-
   // the rotation of the boid can be calcualted by the current acceleration vector
   // note: we'll want to lerp towards this
   rotation = std::atan2(acceleration.y, acceleration.x) - (M_PI / 2.0f);
-
-  // TODO: calculate acceleration against other neighbouring boids
 
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);

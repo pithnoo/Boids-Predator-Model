@@ -10,6 +10,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <vector>
+
 #include "defaults.hpp"
 
 #include "../support/checkpoint.hpp"
@@ -158,9 +160,7 @@ int main() try {
   // Create vertex buffers and VAO
   // TODO: create VBOs and VAO
 
-  Boid boid1(40.0f, 3.0f);
-  Boid boid2(40.0f, 3.0f);
-  Boid boid3(40.0f, 3.0f);
+  std::vector<Boid> boids(15);
 
   // Animation state
   auto last = Clock::now();
@@ -198,11 +198,10 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
-    boid1.update(state.prog, dt);
-    boid2.update(state.prog, dt);
-    boid3.update(state.prog, dt);
-
-    // std::printf("%f %f\r", boid.position.x, boid.position.y); 
+	// update each set of boids
+	for(auto &b : boids){
+	  b.update(state.prog, dt);
+	}
 
     OGL_CHECKPOINT_DEBUG();
 
