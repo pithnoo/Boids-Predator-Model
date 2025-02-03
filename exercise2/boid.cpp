@@ -33,7 +33,7 @@ Boid::Boid(){
   glDeleteBuffers(1, &posVBO);
 }
 
-void Boid::update(ShaderProgram* prog, float dt){
+void Boid::update(const std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -66,15 +66,39 @@ void Boid::update(ShaderProgram* prog, float dt){
     }
   }
 
-  // TODO: calculate acceleration against other neighbouring boids
-  
+  // for optimisation, we only need to take 3 neighbour boids here
+  std::vector<Boid> neighbours;
+  float dx, dy;
+  float neighbourDistance;
+
+  for(auto &b : boids){
+	if(neighbours.size() >= 3)
+	  break;
+
+	// calculating the square of x and y
+	// TODO: change accordingly depending on the surface height
+	dx = std::pow((position.x - b.position.x) * 640.f, 2);
+	dy = std::pow((position.y - b.position.y) * 360.f, 2);
+
+	// pythagorus to find distance between neighbours
+	neighbourDistance = std::sqrt(dx + dy);
+
+	if(neighbourDistance <= boidRange){
+	  std::cout << "neighbour added dx: " << dx << std::endl;
+	  neighbours.push_back(b);
+	}
+  }
 
   // deciding the resulting acceleration and rotation
   position.x += acceleration.x;
   position.y += acceleration.y;
+
   // the rotation of the boid can be calcualted by the current acceleration vector
   // note: we'll want to lerp towards this
   rotation = std::atan2(acceleration.y, acceleration.x) - (M_PI / 2.0f);
+
+  // we can clear current neighbours once we calculate resultant acceleration
+  neighbours.clear();
 
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);

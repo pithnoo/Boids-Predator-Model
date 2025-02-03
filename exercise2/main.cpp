@@ -138,7 +138,7 @@ int main() try {
   glEnable(GL_CULL_FACE);
 
   // pixels will be cleared to this by default
-  glClearColor(0.f, 0.f, 0.f, 0.0f);
+  glClearColor(1.f, 1.f, 1.f, 1.f);
 
   OGL_CHECKPOINT_ALWAYS();
 
@@ -160,7 +160,7 @@ int main() try {
   // Create vertex buffers and VAO
   // TODO: create VBOs and VAO
 
-  std::vector<Boid> boids(15);
+  std::vector<Boid> boids(3);
 
   // Animation state
   auto last = Clock::now();
@@ -200,7 +200,7 @@ int main() try {
 
 	// update each set of boids
 	for(auto &b : boids){
-	  b.update(state.prog, dt);
+	  b.update(boids, state.prog, dt);
 	}
 
     OGL_CHECKPOINT_DEBUG();

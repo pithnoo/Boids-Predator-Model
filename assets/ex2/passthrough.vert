@@ -13,7 +13,7 @@ out vec3 v2fColor;
 
 void main()
 {
-  v2fColor = vec3(0, 0.5, 1);
+  v2fColor = vec3(0, 0, 0);
 
   // new position
   vec3 tPosition = transform * vec3(iPosition.xy, 1.0);
