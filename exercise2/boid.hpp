@@ -7,11 +7,11 @@
 #include <GL/glext.h>
 #include <iostream>
 #include <math.h>
+#include <cstdlib>
 
 #include "../vmlib/vec2.hpp"
 #include "../vmlib/mat33.hpp"
 #include "../support/program.hpp"
-
 
 class Boid {
 public:
@@ -47,7 +47,7 @@ private:
   // minimum distance before rotating against boundary
   float minDistance;
 
-  // the boid's final acceleration, provided all bounds
+  // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.01f, 0.01f };
 
   // resultant x and y (comparing it with edges of screen)

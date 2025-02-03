@@ -1,9 +1,16 @@
 #include "boid.hpp"
-#include <GL/glext.h>
 
 Boid::Boid(float d, float s){
   minDistance = d;
   speed = s;
+
+  float x = std::rand() % 100 * 0.01f;
+  float y = std::rand() % 100 * 0.01f;
+  position = {x, y};
+
+  float ax = std::rand() % 100 * 0.0001f;
+  float ay = std::rand() % 100 * 0.0001f;
+  acceleration = {ax, ay};
 
   // initialise position vbo
   glGenBuffers(1, &posVBO);
@@ -30,12 +37,13 @@ Boid::Boid(float d, float s){
 }
 
 void Boid::update(ShaderProgram* prog, float dt){
+
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
-
   float dRight = 1.f - position.x;
   float dLeft = std::abs(-1.f - position.x);
 
+  // conversion of NDC coordinates to the current screen coordinates
   float dX = std::min(dLeft, dRight) * 720.f;
 
   if(dX < minDistance){
@@ -53,7 +61,6 @@ void Boid::update(ShaderProgram* prog, float dt){
   float dY = std::min(dBottom, dTop) * 360.f;
 
   if(dY < minDistance){
-    // std::cout << "acting on distance:" << dY << "\r";
     if(dBottom < dTop){
       acceleration.y += boundaryForce;
     }
@@ -66,7 +73,10 @@ void Boid::update(ShaderProgram* prog, float dt){
   position.x += acceleration.x;
   position.y += acceleration.y;
 
-  // rotation = std::atan(acceleration.y / acceleration.x);
+  // the rotation of the boid can be calcualted by the current acceleration vector
+  // note: we'll want to lerp towards this
+  rotation = std::atan(acceleration.y / acceleration.x);
+  // rotation += 0.01f;
 
   // TODO: calculate acceleration against other neighbouring boids
 
