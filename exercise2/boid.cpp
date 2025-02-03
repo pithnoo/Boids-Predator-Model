@@ -33,21 +33,19 @@ void Boid::update(ShaderProgram* prog, float dt){
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
 
-  /*
   float dRight = 1.f - position.x;
   float dLeft = std::abs(-1.f - position.x);
 
-  float dX = std::min(std::abs(dLeft), std::abs(dRight)) * 720.f;
+  float dX = std::min(dLeft, dRight) * 720.f;
 
-  if(minDistance < dX){
-    if(dLeft * -1.0f < dRight){
+  if(dX < minDistance){
+    if(dLeft < dRight){
       acceleration.x += boundaryForce;
     }
     else{
       acceleration.x -= boundaryForce;
     }
   }
-  */
 
   float dTop = 1.f - position.y;
   float dBottom = std::abs(-1.f - position.y);

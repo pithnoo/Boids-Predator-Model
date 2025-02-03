@@ -48,7 +48,7 @@ private:
   float minDistance;
 
   // the boid's final acceleration, provided all bounds
-  Vec2f acceleration = { 0.f, 0.01f };
+  Vec2f acceleration = { 0.01f, 0.01f };
 
   // resultant x and y (comparing it with edges of screen)
   float disX;
