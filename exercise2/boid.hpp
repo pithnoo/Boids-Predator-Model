@@ -40,7 +40,7 @@ public:
   // initialise boid
   Boid();
 
-  void update(const std::vector<Boid>& boids, ShaderProgram* prog, float dt);
+  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt);
 
   // possible call function to get current position of boid
 
@@ -49,7 +49,7 @@ private:
   float minDistance = 40.f;
 
   // range to recognise other neighbouring boids
-  float boidRange = 5.f;
+  float boidRange = 200.f;
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.01f, 0.01f };

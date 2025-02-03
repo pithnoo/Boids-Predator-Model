@@ -33,7 +33,7 @@ Boid::Boid(){
   glDeleteBuffers(1, &posVBO);
 }
 
-void Boid::update(const std::vector<Boid>& boids, ShaderProgram* prog, float dt){
+void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -72,6 +72,10 @@ void Boid::update(const std::vector<Boid>& boids, ShaderProgram* prog, float dt)
   float neighbourDistance;
 
   for(auto &b : boids){
+	// skip boid that is in exact position
+	if(b.position == position)
+	  continue;
+
 	if(neighbours.size() >= 3)
 	  break;
 
@@ -84,7 +88,7 @@ void Boid::update(const std::vector<Boid>& boids, ShaderProgram* prog, float dt)
 	neighbourDistance = std::sqrt(dx + dy);
 
 	if(neighbourDistance <= boidRange){
-	  std::cout << "neighbour added dx: " << dx << std::endl;
+	  std::cout << "neighbour: " << neighbourDistance << std::endl;
 	  neighbours.push_back(b);
 	}
   }

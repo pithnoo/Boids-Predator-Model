@@ -39,6 +39,13 @@ Vec2f operator-( Vec2f aVec ) noexcept
 }
 
 constexpr
+bool operator==(Vec2f aLeft, Vec2f aRight) noexcept{
+  if(aLeft.x == aRight.x && aLeft.y == aRight.y)
+	return true;
+  return false;
+}
+
+constexpr
 Vec2f operator+( Vec2f aLeft, Vec2f aRight ) noexcept
 {
 	return Vec2f{
@@ -46,6 +53,7 @@ Vec2f operator+( Vec2f aLeft, Vec2f aRight ) noexcept
 		aLeft.y + aRight.y
 	};
 }
+
 constexpr
 Vec2f operator-( Vec2f aLeft, Vec2f aRight ) noexcept
 {
