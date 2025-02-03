@@ -158,7 +158,7 @@ int main() try {
   // Create vertex buffers and VAO
   // TODO: create VBOs and VAO
 
-  Boid boid(3.0f, 3.0f);
+  Boid boid(40.0f, 3.0f);
 
   // Animation state
   auto last = Clock::now();
@@ -196,9 +196,9 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
-	boid.update(state.prog, dt);
+    boid.update(state.prog, dt);
 
-	std::printf("%f %f\r", boid.position.x, boid.position.y); 
+    std::printf("%f %f\r", boid.position.x, boid.position.y); 
 
     OGL_CHECKPOINT_DEBUG();
 

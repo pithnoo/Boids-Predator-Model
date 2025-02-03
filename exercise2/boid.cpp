@@ -31,35 +31,44 @@ Boid::Boid(float d, float s){
 
 void Boid::update(ShaderProgram* prog, float dt){
   // calculate distances between screen boundaries
+  // origin is defined at the center of the screen
 
-  if((1280 - position.x) >= position.x){
-	disX = 1280-position.x;
+  /*
+  float dRight = 1.f - position.x;
+  float dLeft = std::abs(-1.f - position.x);
+
+  float dX = std::min(std::abs(dLeft), std::abs(dRight)) * 720.f;
+
+  if(minDistance < dX){
+    if(dLeft * -1.0f < dRight){
+      acceleration.x += boundaryForce;
+    }
+    else{
+      acceleration.x -= boundaryForce;
+    }
   }
-  else{
-	disX = -position.x;
+  */
+
+  float dTop = 1.f - position.y;
+  float dBottom = std::abs(-1.f - position.y);
+
+  float dY = std::min(dBottom, dTop) * 360.f;
+
+  if(dY < minDistance){
+    // std::cout << "acting on distance:" << dY << "\r";
+    if(dBottom < dTop){
+      acceleration.y += boundaryForce;
+    }
+    else{
+      acceleration.y -= boundaryForce;
+    }
   }
 
-  if((720 - position.y) >= position.y) {
-	disY = 720-position.y;
-  }
-  else{
-	disY = -position.y;
-  }
+  // deciding the resulting acceleration and rotation
+  position.x += acceleration.x;
+  position.y += acceleration.y;
 
-  float total = disX + disY;
-
-  disX /= total;
-  disY /= total;
-
-  // rotation = std::tan(disY / disX);
-
-  // position.x += speedX * 0.001f * dt;
-  // position.y += speedY * 0.001f * dt;
-
-  position.x += 0;
-  position.y += 0;
-
-  //std::printf("%f %f\n", speedX, speedY); 
+  // rotation = std::atan(acceleration.y / acceleration.x);
 
   // TODO: calculate acceleration against other neighbouring boids
 
@@ -76,5 +85,4 @@ void Boid::update(ShaderProgram* prog, float dt){
 
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindVertexArray(0);
-
 }

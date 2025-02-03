@@ -19,8 +19,6 @@ public:
   Vec2f position = {0.f, 0.f};
 
   // vector split of the resultant speed
-  float speedX;
-  float speedY;
   float dt;
 
   // boid initial colour
@@ -28,13 +26,12 @@ public:
 
   // initial boid positions
   float boidPos[6] = {
-    0.f, 0.05f,
-    -0.025f, -0.05f,
-    0.025f, -0.05f,
+    0.f, 0.03f,
+    -0.01f, -0.03f,
+    0.01f, -0.03f,
   };
 
-  // minimum distance before rotating against boundary
-  float minDistance;
+  float boundaryForce = 0.001f;
 
   // how fast we want boid to move
   float speed;
@@ -47,6 +44,12 @@ public:
   // possible call function to get current position of boid
 
 private:
+  // minimum distance before rotating against boundary
+  float minDistance;
+
+  // the boid's final acceleration, provided all bounds
+  Vec2f acceleration = { 0.f, 0.01f };
+
   // resultant x and y (comparing it with edges of screen)
   float disX;
   float disY;
