@@ -69,14 +69,17 @@ void Boid::update(ShaderProgram* prog, float dt){
     }
   }
 
+  // for normalising the acceleration vector
+  // float norm = std::sqrt(std::pow(acceleration.x, 2) + std::pow(acceleration.y, 2));
+  // float norm = acceleration.x + acceleration.y;
+
   // deciding the resulting acceleration and rotation
   position.x += acceleration.x;
   position.y += acceleration.y;
 
   // the rotation of the boid can be calcualted by the current acceleration vector
   // note: we'll want to lerp towards this
-  rotation = std::atan(acceleration.y / acceleration.x);
-  // rotation += 0.01f;
+  rotation = std::atan2(acceleration.y, acceleration.x) - (M_PI / 2.0f);
 
   // TODO: calculate acceleration against other neighbouring boids
 

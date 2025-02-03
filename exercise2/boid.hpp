@@ -7,6 +7,7 @@
 #include <GL/glext.h>
 #include <iostream>
 #include <math.h>
+#include <cmath>
 #include <cstdlib>
 
 #include "../vmlib/vec2.hpp"
