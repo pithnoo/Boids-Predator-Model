@@ -42,7 +42,6 @@ public:
 
   void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt);
 
-
 private:
   // minimum distance before rotating against boundary
   float minDistance = 40.f;

@@ -99,6 +99,10 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   // alignment: steer towards the average heading of the flock
 
   // cohesion: steer the boid towards the local center of the flock
+  Vec2f averagePosition = {0.f, 0.f};
+  for(auto &n : neighbours){
+	continue;
+  }
 
   // take average acceleration of the 3
 
