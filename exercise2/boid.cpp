@@ -96,60 +96,69 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 	  // std::cout << "neighbour: " << neighbourDistance << std::endl;
 	  neighbours.push_back(b);
 
-	  /*
 	  // if its really close, we gotta avoid it
 	  if(neighbourDistance <= avoidDistance){
 		closeNeighbours.push_back(b);
 	  }
-	  */
 	}
   }
 
   Vec2f ruleAcceleration = {0.f, 0.f};
-
-  /*
+  
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
-  for(auto &n : closeNeighbours){
-	std::cout << "close neighbour found: " << n.position.x << std::endl;
-	averageSeperation += n.position - position;
-  }
-  averageSeperation /= neighbours.size();
 
-  ruleAcceleration += averageSeperation * 0.0001f;
-  */
+  for(auto &n : closeNeighbours){
+	// std::cout << "close neighbour found: " << n.position.x << std::endl;
+	averageSeperation += position - n.position;
+  }
+  averageSeperation /= 3;
+
+  ruleAcceleration += averageSeperation * 0.1f;
 
   // alignment: steer towards the average heading of the flock
+  // this issue
   Vec2f averageAcceleration = {0.f, 0.f};
+
   for(auto &n : neighbours){
 	averageAcceleration += n.acceleration;
   }
-  averageAcceleration /= neighbours.size();
+  averageAcceleration /= 3;
 
-  ruleAcceleration += (averageAcceleration - position) * 0.0001f;
-
+  ruleAcceleration += averageAcceleration * 0.005f;
+  
   // cohesion: steer the boid towards the local center of the flock
   Vec2f averagePosition = {0.f, 0.f};
   for(auto &n : neighbours){
 	averagePosition += n.position;
   }
-  averagePosition /= neighbours.size();
+  averagePosition /= 3;
 
-  ruleAcceleration += (averagePosition - position) * 0.0001f;
+  ruleAcceleration += (averagePosition - position) * 0.005f;
 
   // take average acceleration of the 3
   acceleration += ruleAcceleration / 3;
 
   // deciding the resulting acceleration and rotation
-  position.x += acceleration.x;
-  position.y += acceleration.y;
+  velocity.x += acceleration.x;
+  velocity.y += acceleration.y;
+
+  // cap at a max velocity
+  velocity.x = std::min(velocity.x, maxVelocity);
+  velocity.y = std::min(velocity.y, maxVelocity);
+
+  position.x += velocity.x;
+  position.y += velocity.y;
 
   // the rotation of the boid can be calcualted by the current acceleration vector
   // note: we'll want to lerp towards this
-  rotation = std::atan2(acceleration.y, acceleration.x) - (M_PI / 2.0f);
+  rotation = std::atan2(velocity.y, velocity.x) - (M_PI / 2.0f);
 
   // we can clear current neighbours once we calculate resultant acceleration
   neighbours.clear();
+
+  // reset acceleration
+  acceleration = {0.f, 0.f};
 
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);

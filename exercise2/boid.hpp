@@ -32,7 +32,6 @@ public:
     0.01f, -0.03f,
   };
 
-  float boundaryForce = 0.001f;
 
   // how fast we want boid to move
   float speed;
@@ -44,14 +43,20 @@ public:
 
 private:
   // minimum distance before rotating against boundary
-  float minDistance = 40.f;
+  float minDistance = 50.f;
+
+  float boundaryForce = 0.007f;
 
   // range to recognise other neighbouring boids
-  float boidRange = 200.f;
-  float avoidDistance = 50.f;
+  float boidRange = 240.f;
+  float avoidDistance = 30.f;
+
+  // highest acceleration of a boid
+  float maxVelocity = 0.01f;
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.01f, 0.01f };
+  Vec2f velocity = { 0.01f, 0.01f };
 
   // resultant x and y (comparing it with edges of screen)
   float disX;
