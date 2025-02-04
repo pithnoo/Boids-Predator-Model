@@ -117,7 +117,6 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   acceleration += averageSeperation * seperationFactor;
 
   // alignment: steer towards the average heading of the flock
-  // this issue
   Vec2f averageAcceleration = {0.f, 0.f};
 
   for(auto &n : neighbours){
@@ -148,8 +147,11 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   velocity.y += acceleration.y;
 
   // cap at a max velocity
+  /*
   velocity.x = std::min(velocity.x, maxVelocity);
   velocity.y = std::min(velocity.y, maxVelocity);
+  */
+  velocity = normalize(velocity) * 0.005f;
 
   position.x += velocity.x;
   position.y += velocity.y;

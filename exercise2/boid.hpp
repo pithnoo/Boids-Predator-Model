@@ -48,13 +48,13 @@ private:
   float avoidDistance = 30.f;
 
   // controls boids overall alignment
-  float alignmentFactor = 0.005f;
+  float alignmentFactor = 0.1f;
 
   // control the boids urge to turn towards it's local center
-  float cohesionFactor = 0.005f;
+  float cohesionFactor = 0.000f;
 
   // range to recognise other neighbouring boids
-  float boidRange = 240.f;
+  float boidRange = 200.f;
 
   // highest acceleration of a boid
   float maxVelocity = 0.01f;

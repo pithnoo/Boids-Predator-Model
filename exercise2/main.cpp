@@ -160,7 +160,7 @@ int main() try {
   // Create vertex buffers and VAO
   // TODO: create VBOs and VAO
 
-  std::vector<Boid> boids(30);
+  std::vector<Boid> boids(10);
 
   // Animation state
   auto last = Clock::now();
