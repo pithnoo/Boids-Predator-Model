@@ -19,9 +19,6 @@ public:
   // central position of the boid
   Vec2f position = {0.f, 0.f};
 
-  // vector split of the resultant speed
-  float dt;
-
   // boid initial colour
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
 
@@ -32,10 +29,6 @@ public:
     0.01f, -0.03f,
   };
 
-
-  // how fast we want boid to move
-  float speed;
-
   // initialise boid
   Boid();
 
@@ -43,24 +36,32 @@ public:
 
 private:
   // minimum distance before rotating against boundary
-  float minDistance = 50.f;
+  float minDistance = 70.f;
 
+  // factor for acceleration applied at boundary
   float boundaryForce = 0.007f;
+
+  // stop boids from colliding
+  float seperationFactor = 0.1f;
+
+  // range to recognise boids that are too close (for seperation)
+  float avoidDistance = 30.f;
+
+  // controls boids overall alignment
+  float alignmentFactor = 0.005f;
+
+  // control the boids urge to turn towards it's local center
+  float cohesionFactor = 0.005f;
 
   // range to recognise other neighbouring boids
   float boidRange = 240.f;
-  float avoidDistance = 30.f;
 
   // highest acceleration of a boid
   float maxVelocity = 0.01f;
 
   // the boid's acceleration, which will change depending on bounds
-  Vec2f acceleration = { 0.01f, 0.01f };
+  Vec2f acceleration = { 0.f, 0.f };
   Vec2f velocity = { 0.01f, 0.01f };
-
-  // resultant x and y (comparing it with edges of screen)
-  float disX;
-  float disY;
 
   // what direction the boid is pointing at
   float rotation = 0;

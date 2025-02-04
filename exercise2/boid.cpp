@@ -80,9 +80,11 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 	if(b.position == position)
 	  continue;
 
+	/*
 	// for optimisation, we only need to take 3 neighbour boids here
-	if(neighbours.size() >= 3)
+	if(neighbours.size() >= 4)
 	  break;
+	*/
 
 	// calculating the square of x and y
 	// TODO: change accordingly depending on the surface height
@@ -93,7 +95,6 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 	neighbourDistance = std::sqrt(dx + dy);
 
 	if(neighbourDistance <= boidRange){
-	  // std::cout << "neighbour: " << neighbourDistance << std::endl;
 	  neighbours.push_back(b);
 
 	  // if its really close, we gotta avoid it
@@ -102,19 +103,18 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 	  }
 	}
   }
-
-  Vec2f ruleAcceleration = {0.f, 0.f};
   
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
 
   for(auto &n : closeNeighbours){
-	// std::cout << "close neighbour found: " << n.position.x << std::endl;
 	averageSeperation += position - n.position;
   }
-  averageSeperation /= 3;
 
-  ruleAcceleration += averageSeperation * 0.1f;
+  if(closeNeighbours.size() > 0)
+	averageSeperation /= closeNeighbours.size();
+
+  acceleration += averageSeperation * seperationFactor;
 
   // alignment: steer towards the average heading of the flock
   // this issue
@@ -123,21 +123,25 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   for(auto &n : neighbours){
 	averageAcceleration += n.acceleration;
   }
-  averageAcceleration /= 3;
 
-  ruleAcceleration += averageAcceleration * 0.005f;
+  if(neighbours.size() > 0)
+	averageAcceleration /= neighbours.size();
+
+  acceleration += averageAcceleration * alignmentFactor;
   
   // cohesion: steer the boid towards the local center of the flock
   Vec2f averagePosition = {0.f, 0.f};
   for(auto &n : neighbours){
 	averagePosition += n.position;
   }
-  averagePosition /= 3;
+  if(neighbours.size() > 0)
+	averagePosition /= neighbours.size();
 
-  ruleAcceleration += (averagePosition - position) * 0.005f;
+  acceleration += (averagePosition - position) * cohesionFactor;
 
-  // take average acceleration of the 3
-  acceleration += ruleAcceleration / 3;
+  // take average acceleration of the 4 rules (including the boundary force)
+  // acceleration = normalize(acceleration / 4) * 0.001f;
+  acceleration /= 4;
 
   // deciding the resulting acceleration and rotation
   velocity.x += acceleration.x;
