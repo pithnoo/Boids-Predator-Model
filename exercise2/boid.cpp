@@ -1,8 +1,8 @@
 #include "boid.hpp"
 
 Boid::Boid(){
-  float x = std::rand() % 100 * 0.01f;
-  float y = std::rand() % 100 * 0.01f;
+  float x = (std::rand() % 1000 * 0.001f) - 0.5f;
+  float y = (std::rand() % 1000 * 0.001f) - 0.5f;
   position = {x, y};
 
   float ax = std::rand() % 100 * 0.0001f;
@@ -146,12 +146,7 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   velocity.x += acceleration.x;
   velocity.y += acceleration.y;
 
-  // cap at a max velocity
-  /*
-  velocity.x = std::min(velocity.x, maxVelocity);
-  velocity.y = std::min(velocity.y, maxVelocity);
-  */
-
+  // normalize velocity to ensure that it does not exceed a limit
   velocity = normalize(velocity) * 0.005f;
 
   position.x += velocity.x;
