@@ -5,9 +5,9 @@ Boid::Boid(){
   float y = (std::rand() % 1000 * 0.001f) - 0.5f;
   position = {x, y};
 
-  float ax = std::rand() % 100 * 0.0001f;
-  float ay = std::rand() % 100 * 0.0001f;
-  acceleration = {ax, ay};
+  float ax = std::rand() % 10000 * 0.001f;
+  float ay = std::rand() % 10000 * 0.001f;
+  velocity = {ax, ay};
 
   // initialise position vbo
   glGenBuffers(1, &posVBO);
