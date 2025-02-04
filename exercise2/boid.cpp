@@ -67,6 +67,10 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   }
 
   std::vector<Boid> neighbours;
+
+  // for seperation
+  std::vector<Boid> closeNeighbours;
+
   float dx, dy;
   float neighbourDistance;
 
@@ -91,20 +95,50 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 	if(neighbourDistance <= boidRange){
 	  // std::cout << "neighbour: " << neighbourDistance << std::endl;
 	  neighbours.push_back(b);
+
+	  /*
+	  // if its really close, we gotta avoid it
+	  if(neighbourDistance <= avoidDistance){
+		closeNeighbours.push_back(b);
+	  }
+	  */
 	}
   }
 
+  Vec2f ruleAcceleration = {0.f, 0.f};
+
+  /*
   // seperation: ensure that boids steer to avoid their flock mates
+  Vec2f averageSeperation = {0.f, 0.f};
+  for(auto &n : closeNeighbours){
+	std::cout << "close neighbour found: " << n.position.x << std::endl;
+	averageSeperation += n.position - position;
+  }
+  averageSeperation /= neighbours.size();
+
+  ruleAcceleration += averageSeperation * 0.0001f;
+  */
 
   // alignment: steer towards the average heading of the flock
+  Vec2f averageAcceleration = {0.f, 0.f};
+  for(auto &n : neighbours){
+	averageAcceleration += n.acceleration;
+  }
+  averageAcceleration /= neighbours.size();
+
+  ruleAcceleration += (averageAcceleration - position) * 0.0001f;
 
   // cohesion: steer the boid towards the local center of the flock
   Vec2f averagePosition = {0.f, 0.f};
   for(auto &n : neighbours){
-	continue;
+	averagePosition += n.position;
   }
+  averagePosition /= neighbours.size();
+
+  ruleAcceleration += (averagePosition - position) * 0.0001f;
 
   // take average acceleration of the 3
+  acceleration += ruleAcceleration / 3;
 
   // deciding the resulting acceleration and rotation
   position.x += acceleration.x;

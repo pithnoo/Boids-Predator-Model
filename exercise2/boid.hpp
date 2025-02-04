@@ -48,6 +48,7 @@ private:
 
   // range to recognise other neighbouring boids
   float boidRange = 200.f;
+  float avoidDistance = 50.f;
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.01f, 0.01f };
