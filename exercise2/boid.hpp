@@ -51,7 +51,7 @@ private:
   float alignmentFactor = 0.1f;
 
   // control the boids urge to turn towards it's local center
-  float cohesionFactor = 0.000f;
+  float cohesionFactor = 0.001f;
 
   // range to recognise other neighbouring boids
   float boidRange = 200.f;
