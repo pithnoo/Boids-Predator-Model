@@ -147,7 +147,7 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   velocity.y += acceleration.y;
 
   // normalize velocity to ensure that it does not exceed a limit
-  velocity = normalize(velocity) * 0.005f;
+  velocity = normalize(velocity) * 0.008f;
 
   position.x += velocity.x;
   position.y += velocity.y;

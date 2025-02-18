@@ -36,10 +36,10 @@ public:
 
 private:
   // minimum distance before rotating against boundary
-  float minDistance = 70.f;
+  float minDistance = 90.f;
 
   // factor for acceleration applied at boundary
-  float boundaryForce = 0.007f;
+  float boundaryForce = 0.009f;
 
   // stop boids from colliding
   float seperationFactor = 0.1f;
@@ -61,7 +61,7 @@ private:
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.f, 0.f };
-  Vec2f velocity = { 0.01f, 0.01f };
+  Vec2f velocity = { 0.f, 0.f };
 
   // what direction the boid is pointing at
   float rotation = 0;
