@@ -133,8 +133,6 @@ int main() try {
   // Global GL state
   OGL_CHECKPOINT_ALWAYS();
 
-  // TODO: global GL setup goes here
-
   // for conversion of fragment shader colours to srgb
   glEnable(GL_FRAMEBUFFER_SRGB);
 
@@ -147,11 +145,9 @@ int main() try {
   // imgui setup
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO();
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init();
-  // imgui setup
 
   OGL_CHECKPOINT_ALWAYS();
 
@@ -197,6 +193,12 @@ int main() try {
       glViewport(0, 0, nwidth, nheight);
     }
 
+	// start draw new frame
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+	ImGui::ShowDemoWindow();
+
     // Update state
     auto const now = Clock::now();
     float dt = std::chrono::duration_cast<Secondsf>(now - last).count();
@@ -213,6 +215,10 @@ int main() try {
 	  b.update(boids, state.prog, dt);
 	}
 
+	// render gui window
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
     OGL_CHECKPOINT_DEBUG();
 
     // Display results
@@ -221,6 +227,7 @@ int main() try {
 
   // Cleanup.
   state.prog = nullptr;
+
 
   return 0;
 } catch (std::exception const &eErr) {
@@ -237,6 +244,11 @@ void glfw_callback_error_(int aErrNum, char const *aErrDesc) {
 
 void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
   if (GLFW_KEY_ESCAPE == aKey && GLFW_PRESS == aAction) {
+	/*
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+	*/
     glfwSetWindowShouldClose(aWindow, GLFW_TRUE);
     return;
   }
