@@ -69,7 +69,7 @@ workspace "COMP3811-glcode"
 	filter "*"
 
 -- Third party dependencies
-include "third_party" 
+include "third_party"
 
 -- Projects
 project "exercise2"
@@ -93,6 +93,7 @@ project "exercise2"
 	links "x-stb"
 	links "x-glad"
 	links "x-glfw"
+	links "x-imgui"
 
 project "exercise2-shaders"
 	local shaders = { 

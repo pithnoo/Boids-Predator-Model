@@ -16,7 +16,7 @@ ifeq ($(config),debug_x64)
   TARGET = $(TARGETDIR)/libsupport-debug-x64-gcc.a
   OBJDIR = ../_build_/debug-x64-gcc/x64/debug/support
   DEFINES += -D_DEBUG=1
-  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include
+  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include -I../third_party/imgui/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -march=native -Wall -pthread -Werror=vla
@@ -43,7 +43,7 @@ ifeq ($(config),release_x64)
   TARGET = $(TARGETDIR)/libsupport-release-x64-gcc.a
   OBJDIR = ../_build_/release-x64-gcc/x64/release/support
   DEFINES += -DNDEBUG=1
-  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include
+  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include -I../third_party/imgui/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -march=native -Wall -pthread -Werror=vla

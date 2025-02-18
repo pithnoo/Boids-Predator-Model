@@ -16,7 +16,7 @@ ifeq ($(config),debug_x64)
   TARGET = $(TARGETDIR)/libx-stb-debug-x64-gcc.a
   OBJDIR = ../_build_/debug-x64-gcc/x64/debug/x-stb
   DEFINES += -D_DEBUG=1
-  INCLUDES += -Istb/include -Iglad/include -Iglfw/include
+  INCLUDES += -Istb/include -Iglad/include -Iglfw/include -Iimgui/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -march=native -Wall -pthread -Werror=vla
@@ -43,7 +43,7 @@ ifeq ($(config),release_x64)
   TARGET = $(TARGETDIR)/libx-stb-release-x64-gcc.a
   OBJDIR = ../_build_/release-x64-gcc/x64/release/x-stb
   DEFINES += -DNDEBUG=1
-  INCLUDES += -Istb/include -Iglad/include -Iglfw/include
+  INCLUDES += -Istb/include -Iglad/include -Iglfw/include -Iimgui/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -march=native -Wall -pthread -Werror=vla
@@ -65,8 +65,6 @@ all: prebuild prelink $(TARGET)
 endif
 
 OBJECTS := \
-	$(OBJDIR)/stb_image.o \
-	$(OBJDIR)/stb_image_write.o \
 
 RESOURCES := \
 
@@ -125,12 +123,6 @@ else
 $(OBJECTS): | $(OBJDIR)
 endif
 
-$(OBJDIR)/stb_image.o: stb/src/stb_image.c
-	@echo $(notdir $<)
-	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/stb_image_write.o: stb/src/stb_image_write.c
-	@echo $(notdir $<)
-	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
 -include $(OBJECTS:%.o=%.d)
 ifneq (,$(PCH))

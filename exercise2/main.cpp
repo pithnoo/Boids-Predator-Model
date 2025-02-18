@@ -3,6 +3,10 @@
 #include <GL/glext.h>
 #include <GLFW/glfw3.h>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include <numbers>
 #include <stdexcept>
 #include <typeinfo>
@@ -121,7 +125,7 @@ int main() try {
   std::printf("SHADING_LANGUAGE_VERSION %s\n",
               glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-  // Ddebug output
+  // Debug output
 #if !defined(NDEBUG)
   setup_gl_debug_output();
 #endif // ~ !NDEBUG
@@ -140,6 +144,15 @@ int main() try {
   // pixels will be cleared to this by default
   glClearColor(1.f, 1.f, 1.f, 1.f);
 
+  // imgui setup
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init();
+  // imgui setup
+
   OGL_CHECKPOINT_ALWAYS();
 
   // Get actual framebuffer size.
@@ -156,9 +169,6 @@ int main() try {
                       {GL_FRAGMENT_SHADER, "assets/ex2/modulate.frag"}});
 
   state.prog = &prog;
-
-  // Create vertex buffers and VAO
-  // TODO: create VBOs and VAO
 
   std::vector<Boid> boids(50);
 
@@ -211,8 +221,6 @@ int main() try {
 
   // Cleanup.
   state.prog = nullptr;
-
-  // TODO: additional cleanup
 
   return 0;
 } catch (std::exception const &eErr) {

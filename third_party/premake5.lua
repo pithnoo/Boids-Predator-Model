@@ -3,6 +3,7 @@
 includedirs( "stb/include" );
 includedirs( "glad/include" );
 includedirs( "glfw/include" );
+includedirs( "imgui/include" );
 
 filter "system:macosx"
 	-- Additional dependencies required by GLFW on MacOS.
@@ -19,7 +20,6 @@ filter "*"
 project( "x-stb" )
 	kind "StaticLib"
 
-
 	filter "toolset:msc-*"
 		-- This is a third party project. We don't fix "upstreams" warnings, as
 		-- the upstreams project may have different standards w.r.t. warning
@@ -31,7 +31,15 @@ project( "x-stb" )
 
 	location "."
 
-	files( "stb/src/*.c" )
+project( "x-imgui" )
+	kind "StaticLib"
+
+	location "."
+
+	files {
+	   "imgui/include/**.h",
+	   "imgui/src/**.cpp",
+	}
 
 project( "x-glad" )
 	kind "StaticLib"
@@ -112,9 +120,7 @@ project( "x-glfw" )
 			"glfw/src/nsgl_context.m",
 			"glfw/src/posix_thread.*",
 			"glfw/src/posix_module.*"
-
 		};
-
 
 project();
 

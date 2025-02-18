@@ -16,14 +16,14 @@ ifeq ($(config),debug_x64)
   TARGET = $(TARGETDIR)/exercise2-debug-x64-gcc.exe
   OBJDIR = ../_build_/debug-x64-gcc/x64/debug/exercise2
   DEFINES += -D_DEBUG=1
-  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include
+  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include -I../third_party/imgui/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -march=native -Wall -pthread -Werror=vla
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -march=native -Wall -pthread -Werror=vla
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../lib/libvmlib-debug-x64-gcc.a ../lib/libsupport-debug-x64-gcc.a ../lib/libx-stb-debug-x64-gcc.a ../lib/libx-glad-debug-x64-gcc.a ../lib/libx-glfw-debug-x64-gcc.a -ldl
-  LDDEPS += ../lib/libvmlib-debug-x64-gcc.a ../lib/libsupport-debug-x64-gcc.a ../lib/libx-stb-debug-x64-gcc.a ../lib/libx-glad-debug-x64-gcc.a ../lib/libx-glfw-debug-x64-gcc.a
+  LIBS += ../lib/libvmlib-debug-x64-gcc.a ../lib/libsupport-debug-x64-gcc.a ../lib/libx-stb-debug-x64-gcc.a ../lib/libx-glad-debug-x64-gcc.a ../lib/libx-glfw-debug-x64-gcc.a ../lib/libx-imgui-debug-x64-gcc.a -ldl
+  LDDEPS += ../lib/libvmlib-debug-x64-gcc.a ../lib/libsupport-debug-x64-gcc.a ../lib/libx-stb-debug-x64-gcc.a ../lib/libx-glad-debug-x64-gcc.a ../lib/libx-glfw-debug-x64-gcc.a ../lib/libx-imgui-debug-x64-gcc.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -pthread
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
@@ -43,14 +43,14 @@ ifeq ($(config),release_x64)
   TARGET = $(TARGETDIR)/exercise2-release-x64-gcc.exe
   OBJDIR = ../_build_/release-x64-gcc/x64/release/exercise2
   DEFINES += -DNDEBUG=1
-  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include
+  INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include -I../third_party/imgui/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -march=native -Wall -pthread -Werror=vla
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20 -march=native -Wall -pthread -Werror=vla
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../lib/libvmlib-release-x64-gcc.a ../lib/libsupport-release-x64-gcc.a ../lib/libx-stb-release-x64-gcc.a ../lib/libx-glad-release-x64-gcc.a ../lib/libx-glfw-release-x64-gcc.a -ldl
-  LDDEPS += ../lib/libvmlib-release-x64-gcc.a ../lib/libsupport-release-x64-gcc.a ../lib/libx-stb-release-x64-gcc.a ../lib/libx-glad-release-x64-gcc.a ../lib/libx-glfw-release-x64-gcc.a
+  LIBS += ../lib/libvmlib-release-x64-gcc.a ../lib/libsupport-release-x64-gcc.a ../lib/libx-stb-release-x64-gcc.a ../lib/libx-glad-release-x64-gcc.a ../lib/libx-glfw-release-x64-gcc.a ../lib/libx-imgui-release-x64-gcc.a -ldl
+  LDDEPS += ../lib/libvmlib-release-x64-gcc.a ../lib/libsupport-release-x64-gcc.a ../lib/libx-stb-release-x64-gcc.a ../lib/libx-glad-release-x64-gcc.a ../lib/libx-glfw-release-x64-gcc.a ../lib/libx-imgui-release-x64-gcc.a
   ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s -pthread
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS

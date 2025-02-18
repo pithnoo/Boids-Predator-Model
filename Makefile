@@ -10,6 +10,7 @@ endif
 
 ifeq ($(config),debug_x64)
   x_stb_config = debug_x64
+  x_imgui_config = debug_x64
   x_glad_config = debug_x64
   x_glfw_config = debug_x64
   exercise2_config = debug_x64
@@ -19,6 +20,7 @@ ifeq ($(config),debug_x64)
 endif
 ifeq ($(config),release_x64)
   x_stb_config = release_x64
+  x_imgui_config = release_x64
   x_glad_config = release_x64
   x_glfw_config = release_x64
   exercise2_config = release_x64
@@ -27,7 +29,7 @@ ifeq ($(config),release_x64)
   vmlib_config = release_x64
 endif
 
-PROJECTS := x-stb x-glad x-glfw exercise2 exercise2-shaders support vmlib
+PROJECTS := x-stb x-imgui x-glad x-glfw exercise2 exercise2-shaders support vmlib
 
 .PHONY: all clean help $(PROJECTS) 
 
@@ -37,6 +39,12 @@ x-stb:
 ifneq (,$(x_stb_config))
 	@echo "==== Building x-stb ($(x_stb_config)) ===="
 	@${MAKE} --no-print-directory -C third_party -f x-stb.make config=$(x_stb_config)
+endif
+
+x-imgui:
+ifneq (,$(x_imgui_config))
+	@echo "==== Building x-imgui ($(x_imgui_config)) ===="
+	@${MAKE} --no-print-directory -C third_party -f x-imgui.make config=$(x_imgui_config)
 endif
 
 x-glad:
@@ -51,7 +59,7 @@ ifneq (,$(x_glfw_config))
 	@${MAKE} --no-print-directory -C third_party -f x-glfw.make config=$(x_glfw_config)
 endif
 
-exercise2: vmlib support x-stb x-glad x-glfw exercise2-shaders
+exercise2: vmlib support x-stb x-glad x-glfw x-imgui exercise2-shaders
 ifneq (,$(exercise2_config))
 	@echo "==== Building exercise2 ($(exercise2_config)) ===="
 	@${MAKE} --no-print-directory -C exercise2 -f Makefile config=$(exercise2_config)
@@ -77,6 +85,7 @@ endif
 
 clean:
 	@${MAKE} --no-print-directory -C third_party -f x-stb.make clean
+	@${MAKE} --no-print-directory -C third_party -f x-imgui.make clean
 	@${MAKE} --no-print-directory -C third_party -f x-glad.make clean
 	@${MAKE} --no-print-directory -C third_party -f x-glfw.make clean
 	@${MAKE} --no-print-directory -C exercise2 -f Makefile clean
@@ -95,6 +104,7 @@ help:
 	@echo "   all (default)"
 	@echo "   clean"
 	@echo "   x-stb"
+	@echo "   x-imgui"
 	@echo "   x-glad"
 	@echo "   x-glfw"
 	@echo "   exercise2"
