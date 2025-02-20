@@ -80,12 +80,6 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 	if(b.position == position)
 	  continue;
 
-	/*
-	// for optimisation, we only need to take 3 neighbour boids here
-	if(neighbours.size() >= 4)
-	  break;
-	*/
-
 	// calculating the square of x and y
 	// TODO: change accordingly depending on the surface height
 	dx = std::pow((position.x - b.position.x) * 640.f, 2);
