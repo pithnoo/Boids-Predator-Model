@@ -166,7 +166,7 @@ int main() try {
 
   state.prog = &prog;
 
-  std::vector<Boid> boids(50);
+  std::vector<Boid> boids(1);
 
   // Animation state
   auto last = Clock::now();

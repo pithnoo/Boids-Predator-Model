@@ -37,6 +37,7 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
+
   float dRight = 1.f - position.x;
   float dLeft = std::abs(-1.f - position.x);
 
@@ -127,13 +128,14 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   for(auto &n : neighbours){
 	averagePosition += n.position;
   }
+
+  // accounts for if no neighbours (i.e. prevents division by 0)
   if(neighbours.size() > 0)
 	averagePosition /= neighbours.size();
 
   acceleration += (averagePosition - position) * cohesionFactor;
 
   // take average acceleration of the 4 rules (including the boundary force)
-  // acceleration = normalize(acceleration / 4) * 0.001f;
   acceleration /= 4;
 
   // deciding the resulting acceleration and rotation
@@ -145,6 +147,8 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 
   position.x += velocity.x;
   position.y += velocity.y;
+
+  // std::printf("position: %.5f, %.5f\n", position.x, position.y);
 
   // the rotation of the boid can be calcualted by the current acceleration vector
   // note: we'll want to lerp towards this

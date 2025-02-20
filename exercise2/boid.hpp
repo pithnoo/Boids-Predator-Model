@@ -24,9 +24,9 @@ public:
 
   // initial boid positions
   float boidPos[6] = {
-    0.f, 0.03f,
-    -0.01f, -0.03f,
-    0.01f, -0.03f,
+    0.f, 0.01f,
+    -0.01f, -0.01f,
+    0.01f, -0.01f,
   };
 
   // initialise boid
@@ -36,16 +36,16 @@ public:
 
 private:
   // minimum distance before rotating against boundary
-  float minDistance = 90.f;
+  float minDistance = 60.f;
 
   // factor for acceleration applied at boundary
   float boundaryForce = 0.009f;
 
   // stop boids from colliding
-  float seperationFactor = 0.1f;
+  float seperationFactor = 0.2f;
 
   // range to recognise boids that are too close (for seperation)
-  float avoidDistance = 30.f;
+  float avoidDistance = 10.f;
 
   // controls boids overall alignment
   float alignmentFactor = 0.1f;
@@ -56,7 +56,7 @@ private:
   // range to recognise other neighbouring boids
   float boidRange = 200.f;
 
-  // highest acceleration of a boid
+  // highest speed of a boid
   float maxVelocity = 0.01f;
 
   // the boid's acceleration, which will change depending on bounds
