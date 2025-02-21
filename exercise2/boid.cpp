@@ -35,7 +35,7 @@ Boid::Boid(){
   glDeleteBuffers(1, &posVBO);
 }
 
-void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
+void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor){
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -145,7 +145,7 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   velocity.y += acceleration.y;
 
   // normalize velocity to ensure that it does not exceed a limit
-  velocity = normalize(velocity) * 0.01f;
+  velocity = normalize(velocity) * maxVelocity;
 
   position.x += velocity.x;
   position.y += velocity.y;

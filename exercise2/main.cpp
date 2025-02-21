@@ -35,6 +35,8 @@ struct State_ {
   ShaderProgram *prog;
 };
 
+void updateGui(float&, float&, float&, float&);
+
 void glfw_callback_error_(int, char const *);
 
 void glfw_callback_key_(GLFWwindow *, int, int, int, int);
@@ -118,12 +120,14 @@ int main() try {
   if (!gladLoadGLLoader((GLADloadproc)&glfwGetProcAddress))
     throw Error("gladLoadGLLoader() failed - cannot load GL API!");
 
+  /*
   // print out specs
   std::printf("RENDERER %s\n", glGetString(GL_RENDERER));
   std::printf("VENDOR %s\n", glGetString(GL_VENDOR));
   std::printf("VERSION %s\n", glGetString(GL_VERSION));
   std::printf("SHADING_LANGUAGE_VERSION %s\n",
               glGetString(GL_SHADING_LANGUAGE_VERSION));
+  */
 
   // Debug output
 #if !defined(NDEBUG)
@@ -166,7 +170,13 @@ int main() try {
 
   state.prog = &prog;
 
-  std::vector<Boid> boids(1);
+  std::vector<Boid> boids(100);
+
+  // boid default values
+  float boidSpeed = 0.01f;
+  float seperationFactor = 0.2f;
+  float alignmentFactor = 0.1f;
+  float cohesionFactor = 0.001f;
 
   // Animation state
   auto last = Clock::now();
@@ -193,11 +203,13 @@ int main() try {
       glViewport(0, 0, nwidth, nheight);
     }
 
-	// start draw new frame
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
+    // start draw new frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    
+    updateGui(boidSpeed, seperationFactor, alignmentFactor, cohesionFactor);
 
     // Update state
     auto const now = Clock::now();
@@ -210,14 +222,22 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
-	// update each set of boids
-	for(auto &b : boids){
-	  b.update(boids, state.prog, dt);
-	}
+    // update each set of boids
+    for(auto &b : boids){
+	b.update(
+		 boids,
+		 state.prog,
+		 dt,
+		 boidSpeed,
+		 seperationFactor,
+		 alignmentFactor,
+		 cohesionFactor
+		 );
+    }
 
-	// render gui window
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // render gui window
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     OGL_CHECKPOINT_DEBUG();
 
@@ -227,7 +247,6 @@ int main() try {
 
   // Cleanup.
   state.prog = nullptr;
-
 
   return 0;
 } catch (std::exception const &eErr) {
@@ -240,6 +259,21 @@ int main() try {
 namespace {
 void glfw_callback_error_(int aErrNum, char const *aErrDesc) {
   std::fprintf(stderr, "GLFW error: %s (%d)\n", aErrDesc, aErrNum);
+}
+
+void updateGui(float &boidSpeed,
+	       float &seperationFactor,
+	       float &alignmentFactor,
+	       float &cohesionFactor){
+
+  ImGui::Begin("Boid Settings");
+  ImGui::Text("Boid Properties");
+  ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 0.1f);
+  ImGui::Text("Boid Rules");
+  ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 1.0f);
+  ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 1.0f);
+  ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 1.0f);
+  ImGui::End();
 }
 
 void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {

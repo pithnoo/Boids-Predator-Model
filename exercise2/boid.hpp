@@ -32,14 +32,14 @@ public:
   // initialise boid
   Boid();
 
-  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt);
+  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor);
 
 private:
   // minimum distance before rotating against boundary
   float minDistance = 50.f;
 
   // factor for acceleration applied at boundary
-  float boundaryForce = 1.f;
+  float boundaryForce = 0.01f;
 
   // stop boids from colliding
   float seperationFactor = 0.2f;
