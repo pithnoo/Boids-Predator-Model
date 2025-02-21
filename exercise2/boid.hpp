@@ -36,16 +36,16 @@ public:
 
 private:
   // minimum distance before rotating against boundary
-  float minDistance = 60.f;
+  float minDistance = 50.f;
 
   // factor for acceleration applied at boundary
-  float boundaryForce = 0.009f;
+  float boundaryForce = 1.f;
 
   // stop boids from colliding
   float seperationFactor = 0.2f;
 
   // range to recognise boids that are too close (for seperation)
-  float avoidDistance = 10.f;
+  float avoidDistance = 5.f;
 
   // controls boids overall alignment
   float alignmentFactor = 0.1f;

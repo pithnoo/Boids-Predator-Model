@@ -1,6 +1,7 @@
 #include "boid.hpp"
 
 Boid::Boid(){
+  // calculate boid size (co-ordinates should be decided so scale of the boid?)
   float x = (std::rand() % 1000 * 0.001f) - 0.5f;
   float y = (std::rand() % 1000 * 0.001f) - 0.5f;
   position = {x, y};
@@ -8,6 +9,7 @@ Boid::Boid(){
   float ax = std::rand() % 10000 * 0.001f;
   float ay = std::rand() % 10000 * 0.001f;
   velocity = {ax, ay};
+
 
   // initialise position vbo
   glGenBuffers(1, &posVBO);
@@ -37,12 +39,11 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
-
   float dRight = 1.f - position.x;
   float dLeft = std::abs(-1.f - position.x);
 
   // conversion of NDC coordinates to the current screen coordinates
-  float dX = std::min(dLeft, dRight) * 720.f;
+  float dX = std::min(dLeft, dRight) * 640.f;
 
   if(dX < minDistance){
     if(dLeft < dRight){
@@ -133,7 +134,8 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   if(neighbours.size() > 0)
 	averagePosition /= neighbours.size();
 
-  acceleration += (averagePosition - position) * cohesionFactor;
+  if(neighbours.size() != 0)
+    acceleration += (averagePosition - position) * cohesionFactor;
 
   // take average acceleration of the 4 rules (including the boundary force)
   acceleration /= 4;
@@ -143,12 +145,10 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt){
   velocity.y += acceleration.y;
 
   // normalize velocity to ensure that it does not exceed a limit
-  velocity = normalize(velocity) * 0.008f;
+  velocity = normalize(velocity) * 0.01f;
 
   position.x += velocity.x;
   position.y += velocity.y;
-
-  // std::printf("position: %.5f, %.5f\n", position.x, position.y);
 
   // the rotation of the boid can be calcualted by the current acceleration vector
   // note: we'll want to lerp towards this
