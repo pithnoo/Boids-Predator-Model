@@ -24,7 +24,7 @@ public:
 
   // initial boid positions
   float boidPos[6] = {
-    0.f, 0.01f,
+    0.f, 0.02f,
     -0.01f, -0.01f,
     0.01f, -0.01f,
   };
@@ -32,7 +32,7 @@ public:
   // initialise boid
   Boid();
 
-  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor);
+  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce);
 
 private:
   // minimum distance before rotating against boundary
@@ -45,7 +45,7 @@ private:
   float seperationFactor = 0.2f;
 
   // range to recognise boids that are too close (for seperation)
-  float avoidDistance = 5.f;
+  float avoidDistance = 10.f;
 
   // controls boids overall alignment
   float alignmentFactor = 0.1f;
@@ -57,7 +57,7 @@ private:
   float boidRange = 200.f;
 
   // highest speed of a boid
-  float maxVelocity = 0.01f;
+  float boidSpeed = 0.01f;
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.f, 0.f };
