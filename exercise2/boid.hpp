@@ -54,7 +54,7 @@ private:
   float cohesionFactor = 0.001f;
 
   // range to recognise other neighbouring boids
-  float boidRange = 80.f;
+  float boidRange = 50.f;
 
   // highest speed of a boid
   float boidSpeed = 0.01f;

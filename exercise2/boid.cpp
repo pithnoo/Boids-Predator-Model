@@ -89,31 +89,39 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 
 	// pythagorus to find distance between neighbours
 	neighbourDistance = std::sqrt(dx + dy);
-
+	
 	if(neighbourDistance <= boidRange){
 	  neighbours.push_back(b);
-
-	  if(neighbours.size() >= 3)
-		break;
 
 	  // if its really close, we gotta avoid it
 	  if(neighbourDistance <= avoidDistance){
 		closeNeighbours.push_back(b);
 	  }
+
 	}
+
+	// reducing the number of iterations, as we don't need to take the whole flock
+	if(closeNeighbours.size() >= 3)
+	  break;
   }
+
+  Vec2f ruleAcceleration = {0.f, 0.f};
   
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
 
-  for(auto &n : neighbours){
-	averageSeperation += position - n.position;
+  for(auto &n : closeNeighbours){
+	// normalize this vector to prevent further boids from having a greater influence
+	averageSeperation += normalize(position - n.position);
   }
 
-  if(neighbours.size() > 0)
-	averageSeperation /= neighbours.size();
+  /*
+  if(closeNeighbours.size() > 0)
+	averageSeperation /= closeNeighbours.size();
+  */
 
-  acceleration += averageSeperation * seperationFactor;
+  if(closeNeighbours.size() > 0)
+	ruleAcceleration += normalize(averageSeperation) * seperationFactor;
 
   // alignment: steer towards the average heading of the flock
   Vec2f averageAlignment = {0.f, 0.f};
@@ -122,32 +130,48 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 	averageAlignment += n.velocity;
   }
 
+  /*
   if(neighbours.size() > 0)
 	averageAlignment /= neighbours.size();
+  */
 
-  acceleration += averageAlignment * alignmentFactor;
+  if(neighbours.size() > 0)
+	ruleAcceleration += normalize(averageAlignment) * alignmentFactor;
   
   // cohesion: steer the boid towards the local center of the flock
   Vec2f averagePosition = {0.f, 0.f};
+
   for(auto &n : neighbours){
 	averagePosition += n.position;
   }
 
+  /*
   // accounts for if no neighbours (i.e. prevents division by 0)
   if(neighbours.size() > 0)
 	averagePosition /= neighbours.size();
+  */
 
-  if(neighbours.size() != 0)
-    acceleration += (averagePosition - position) * cohesionFactor;
+  // why check if this isn't 0?
+  if(neighbours.size() > 0)
+    ruleAcceleration += normalize(averagePosition - position) * cohesionFactor;
 
+  /*
   // take average acceleration of the 4 rules (including the boundary force)
   acceleration /= 4;
+  */
+
+  // average out the influence of the 3 rules
+  ruleAcceleration /= 3;
+
+
+  // allowing the boundary force to have the highest influence
+  acceleration += ruleAcceleration * 0.05f;
 
   // deciding the resulting acceleration and rotation
   velocity.x += acceleration.x;
   velocity.y += acceleration.y;
 
-  // normalize velocity to ensure that it does not exceed a limit
+  // normalize velocity to ensure that it does not exceed the boid speed limit
   velocity = normalize(velocity) * boidSpeed;
 
   position.x += velocity.x;
@@ -159,9 +183,12 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 
   // we can clear current neighbours once we calculate resultant acceleration
   neighbours.clear();
+  closeNeighbours.clear();
 
   // reset acceleration
   acceleration = {0.f, 0.f};
+
+  // std::printf("%.2f, %.2f\n", position.x, position.y);
 
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);
