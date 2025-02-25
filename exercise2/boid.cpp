@@ -93,6 +93,9 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 	if(neighbourDistance <= boidRange){
 	  neighbours.push_back(b);
 
+	  if(neighbours.size() >= 3)
+		break;
+
 	  // if its really close, we gotta avoid it
 	  if(neighbourDistance <= avoidDistance){
 		closeNeighbours.push_back(b);
@@ -103,12 +106,12 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
 
-  for(auto &n : closeNeighbours){
+  for(auto &n : neighbours){
 	averageSeperation += position - n.position;
   }
 
-  if(closeNeighbours.size() > 0)
-	averageSeperation /= closeNeighbours.size();
+  if(neighbours.size() > 0)
+	averageSeperation /= neighbours.size();
 
   acceleration += averageSeperation * seperationFactor;
 

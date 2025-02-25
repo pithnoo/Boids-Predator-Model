@@ -24,9 +24,9 @@ public:
 
   // initial boid positions
   float boidPos[6] = {
-    0.f, 0.02f,
-    -0.01f, -0.01f,
-    0.01f, -0.01f,
+    0.f, 0.01f,
+    -0.005f, -0.005f,
+    0.005f, -0.005f,
   };
 
   // initialise boid
@@ -54,7 +54,7 @@ private:
   float cohesionFactor = 0.001f;
 
   // range to recognise other neighbouring boids
-  float boidRange = 200.f;
+  float boidRange = 80.f;
 
   // highest speed of a boid
   float boidSpeed = 0.01f;
