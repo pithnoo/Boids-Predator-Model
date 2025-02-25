@@ -35,7 +35,7 @@ struct State_ {
   ShaderProgram *prog;
 };
 
-void updateGui(float&, float&, float&, float&, float&);
+void updateGui(float&, float&, float&, float&, float&, float&);
 
 void glfw_callback_error_(int, char const *);
 
@@ -170,14 +170,15 @@ int main() try {
 
   state.prog = &prog;
 
-  std::vector<Boid> boids(100);
+  std::vector<Boid> boids(300);
 
   // boid default values
   float boidSpeed = 0.01f;
-  float seperationFactor = 0.2f;
-  float alignmentFactor = 0.1f;
-  float cohesionFactor = 0.001f;
-  float boundaryForce = 0.01f;
+  float seperationFactor = 0.5f;
+  float alignmentFactor = 0.3f;
+  float cohesionFactor = 0.1f;
+  float boundaryForce = 0.005f;
+  float steeringFactor = 0.009f;
 
   // Animation state
   auto last = Clock::now();
@@ -209,7 +210,7 @@ int main() try {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     
-    updateGui(boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce);
+    updateGui(boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce, steeringFactor);
 
     // Update state
     auto const now = Clock::now();
@@ -232,7 +233,8 @@ int main() try {
 		 seperationFactor,
 		 alignmentFactor,
 		 cohesionFactor,
-		 boundaryForce
+		 boundaryForce,
+		 steeringFactor
 		 );
     }
 
@@ -263,11 +265,12 @@ void glfw_callback_error_(int aErrNum, char const *aErrDesc) {
 }
 
 void updateGui(float &boidSpeed,
-	       float &seperationFactor,
-	       float &alignmentFactor,
-	       float &cohesionFactor,
-	       float &boundaryForce
-	       ){
+			   float &seperationFactor,
+			   float &alignmentFactor,
+			   float &cohesionFactor,
+			   float &boundaryForce,
+			   float &steeringFactor
+			   ){
 
   ImGui::Begin("Boid Settings");
   ImGui::Text("Boid Properties");
@@ -276,8 +279,9 @@ void updateGui(float &boidSpeed,
   ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 1.0f);
   ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 1.0f);
   ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 1.0f);
+  ImGui::SliderFloat("Steering Factor", &steeringFactor, 0.0f, 0.1f);
   ImGui::Text("Misc");
-  ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 1.0f);
+  ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 0.01f);
   ImGui::End();
 }
 

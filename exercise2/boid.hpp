@@ -19,6 +19,9 @@ public:
   // central position of the boid
   Vec2f position = {0.f, 0.f};
 
+  // indication boid is close to boundary
+  bool atBoundary = false;
+
   // boid initial colour
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
 
@@ -32,7 +35,7 @@ public:
   // initialise boid
   Boid();
 
-  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce);
+  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
 
 private:
   // minimum distance before rotating against boundary

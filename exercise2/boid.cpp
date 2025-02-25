@@ -35,7 +35,7 @@ Boid::Boid(){
   glDeleteBuffers(1, &posVBO);
 }
 
-void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce){
+void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor){
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -46,6 +46,7 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
   float dX = std::min(dLeft, dRight) * 640.f;
 
   if(dX < minDistance){
+	atBoundary = true;
     if(dLeft < dRight){
       acceleration.x += boundaryForce;
     }
@@ -60,6 +61,7 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
   float dY = std::min(dBottom, dTop) * 360.f;
 
   if(dY < minDistance){
+	atBoundary = true;
     if(dBottom < dTop){
       acceleration.y += boundaryForce;
     }
@@ -90,14 +92,13 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 	// pythagorus to find distance between neighbours
 	neighbourDistance = std::sqrt(dx + dy);
 	
-	if(neighbourDistance <= boidRange){
+	if(neighbourDistance <= boidRange && b.atBoundary == false){
 	  neighbours.push_back(b);
 
 	  // if its really close, we gotta avoid it
 	  if(neighbourDistance <= avoidDistance){
 		closeNeighbours.push_back(b);
 	  }
-
 	}
 
 	// reducing the number of iterations, as we don't need to take the whole flock
@@ -115,11 +116,6 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 	averageSeperation += normalize(position - n.position);
   }
 
-  /*
-  if(closeNeighbours.size() > 0)
-	averageSeperation /= closeNeighbours.size();
-  */
-
   if(closeNeighbours.size() > 0)
 	ruleAcceleration += normalize(averageSeperation) * seperationFactor;
 
@@ -130,42 +126,31 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 	averageAlignment += n.velocity;
   }
 
-  /*
-  if(neighbours.size() > 0)
-	averageAlignment /= neighbours.size();
-  */
-
+  // if we take the average, then higher velocities will take priority in direction
   if(neighbours.size() > 0)
 	ruleAcceleration += normalize(averageAlignment) * alignmentFactor;
   
   // cohesion: steer the boid towards the local center of the flock
   Vec2f averagePosition = {0.f, 0.f};
 
+  // take influence of only boids that are not at the boundary
   for(auto &n : neighbours){
 	averagePosition += n.position;
   }
 
-  /*
   // accounts for if no neighbours (i.e. prevents division by 0)
   if(neighbours.size() > 0)
 	averagePosition /= neighbours.size();
-  */
 
   // why check if this isn't 0?
   if(neighbours.size() > 0)
     ruleAcceleration += normalize(averagePosition - position) * cohesionFactor;
 
-  /*
-  // take average acceleration of the 4 rules (including the boundary force)
-  acceleration /= 4;
-  */
-
   // average out the influence of the 3 rules
   ruleAcceleration /= 3;
 
-
-  // allowing the boundary force to have the highest influence
-  acceleration += ruleAcceleration * 0.05f;
+  // determining how much the 3 main rules affect overall acceleration
+  acceleration += ruleAcceleration * steeringFactor;
 
   // deciding the resulting acceleration and rotation
   velocity.x += acceleration.x;
@@ -187,6 +172,9 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 
   // reset acceleration
   acceleration = {0.f, 0.f};
+
+  // set false until proven otherwise on the next frame
+  atBoundary = false;
 
   // std::printf("%.2f, %.2f\n", position.x, position.y);
 
