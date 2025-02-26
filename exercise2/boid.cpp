@@ -2,12 +2,12 @@
 
 Boid::Boid(){
   // calculate boid size (co-ordinates should be decided so scale of the boid?)
-  float x = (std::rand() % 1000 * 0.001f) - 0.5f;
-  float y = (std::rand() % 1000 * 0.001f) - 0.5f;
+  float x = (std::rand() % 1000 * 0.002f) - 1.0f;
+  float y = (std::rand() % 1000 * 0.002f) - 1.0f;
   position = {x, y};
 
-  float ax = std::rand() % 10000 * 0.001f;
-  float ay = std::rand() % 10000 * 0.001f;
+  float ax = std::rand() % 10000 * 0.01f;
+  float ay = std::rand() % 10000 * 0.01f;
   velocity = {ax, ay};
 
   // initialise position vbo
@@ -71,7 +71,7 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 
   std::vector<Boid> neighbours;
 
-  // for seperation
+  // for seperation rule
   std::vector<Boid> closeNeighbours;
 
   float dx, dy;
@@ -92,11 +92,11 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 	neighbourDistance = std::sqrt(dx + dy);
 	
 	if(neighbourDistance <= boidRange && b.atBoundary == false){
-	  neighbours.push_back(b);
+	  neighbours.emplace_back(b);
 
 	  // if its really close, we gotta avoid it
 	  if(neighbourDistance <= avoidDistance){
-		closeNeighbours.push_back(b);
+		closeNeighbours.emplace_back(b);
 	  }
 	}
 
@@ -158,11 +158,11 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
   // normalize velocity to ensure that it does not exceed the boid speed limit
   velocity = normalize(velocity) * boidSpeed;
 
-  position.x += velocity.x;
-  position.y += velocity.y;
+  // note: add delta time to this
+  position.x += velocity.x * dt;
+  position.y += velocity.y * dt;
 
   // the rotation of the boid can be calcualted by the current acceleration vector
-  // note: we'll want to lerp towards this
   rotation = std::atan2(velocity.y, velocity.x) - (M_PI / 2.0f);
 
   // we can clear current neighbours once we calculate resultant acceleration
@@ -174,8 +174,6 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 
   // set false until proven otherwise on the next frame
   atBoundary = false;
-
-  // std::printf("%.2f, %.2f\n", position.x, position.y);
 
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);

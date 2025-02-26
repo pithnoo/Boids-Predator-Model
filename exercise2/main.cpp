@@ -35,7 +35,7 @@ struct State_ {
   ShaderProgram *prog;
 };
 
-void updateGui(float&, float&, float&, float&, float&, float&);
+void updateGui(float&, float&, float&, float&, float&, float&, float);
 
 void glfw_callback_error_(int, char const *);
 
@@ -149,6 +149,8 @@ int main() try {
   // imgui setup
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  io.FontGlobalScale = 2.f;
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init();
@@ -173,15 +175,17 @@ int main() try {
   std::vector<Boid> boids(300);
 
   // boid default values
-  float boidSpeed = 0.01f;
-  float seperationFactor = 0.5f;
-  float alignmentFactor = 0.3f;
-  float cohesionFactor = 0.1f;
-  float boundaryForce = 0.005f;
-  float steeringFactor = 0.009f;
+  float boidSpeed = 0.15f;
+  float seperationFactor = 0.f;
+  float alignmentFactor = 0.f;
+  float cohesionFactor = 0.f;
+  float boundaryForce = 0.05f;
+  float steeringFactor = 0.f;
 
   // Animation state
   auto last = Clock::now();
+  float timeElapsed = 0.f;
+  float displayFps = 0.f;
 
   // Main loop
   while (!glfwWindowShouldClose(window)) {
@@ -209,13 +213,19 @@ int main() try {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    
-    updateGui(boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce, steeringFactor);
 
     // Update state
     auto const now = Clock::now();
     float dt = std::chrono::duration_cast<Secondsf>(now - last).count();
+	timeElapsed += dt;
     last = now;
+
+	if(timeElapsed >= 1.f){
+	  displayFps = 1.f / dt;
+	  timeElapsed = 0.f;
+	}
+
+    updateGui(boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce, steeringFactor, displayFps);
 
     // Draw scene
     OGL_CHECKPOINT_DEBUG();
@@ -225,17 +235,17 @@ int main() try {
 
     // update each set of boids
     for(auto &b : boids){
-	b.update(
-		 boids,
-		 state.prog,
-		 dt,
-		 boidSpeed,
-		 seperationFactor,
-		 alignmentFactor,
-		 cohesionFactor,
-		 boundaryForce,
-		 steeringFactor
-		 );
+	  b.update(
+			   boids,
+			   state.prog,
+			   dt,
+			   boidSpeed,
+			   seperationFactor,
+			   alignmentFactor,
+			   cohesionFactor,
+			   boundaryForce,
+			   steeringFactor
+			   );
     }
 
     // render gui window
@@ -269,19 +279,21 @@ void updateGui(float &boidSpeed,
 			   float &alignmentFactor,
 			   float &cohesionFactor,
 			   float &boundaryForce,
-			   float &steeringFactor
+			   float &steeringFactor,
+			   float fps 
 			   ){
 
   ImGui::Begin("Boid Settings");
+  ImGui::Text("%.1f FPS", fps);
   ImGui::Text("Boid Properties");
-  ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 0.1f);
+  ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 3.f);
   ImGui::Text("Boid Rules");
-  ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 1.0f);
-  ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 1.0f);
-  ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 1.0f);
-  ImGui::SliderFloat("Steering Factor", &steeringFactor, 0.0f, 0.1f);
+  ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 10.0f);
+  ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 3.0f);
+  ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 3.0f);
+  ImGui::SliderFloat("Steering Factor", &steeringFactor, 0.0f, 3.f);
   ImGui::Text("Misc");
-  ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 0.01f);
+  ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 3.f);
   ImGui::End();
 }
 
