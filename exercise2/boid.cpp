@@ -10,7 +10,6 @@ Boid::Boid(){
   float ay = std::rand() % 10000 * 0.001f;
   velocity = {ax, ay};
 
-
   // initialise position vbo
   glGenBuffers(1, &posVBO);
   glBindBuffer(GL_ARRAY_BUFFER, posVBO);
