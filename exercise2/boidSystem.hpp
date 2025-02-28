@@ -1,4 +1,8 @@
+#ifndef BOID_SYSTEM_HPP
+#define BOID_SYSTEM_HPP
+
 #include <vector>
+#include <GL/glext.h>
 #include <iostream>
 
 #include "boid.hpp"
@@ -6,11 +10,19 @@
 
 class BoidSystem {
 public:
+  // boids tp update
+  std::vector<Boid> boids;
+
+  // enable pausing the boids system currently
+  bool isPaused;
+
   BoidSystem();
+
   void update(ShaderProgram* prog, float dt);
   
 private:
-  GLuint posVBO;
+  GLuint vao = 0;
+  GLuint posVBO = 0;
 
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
 
@@ -21,3 +33,5 @@ private:
   };
 
 };
+
+#endif

@@ -22,6 +22,9 @@ public:
   // indication boid is close to boundary
   bool atBoundary = false;
 
+  // for the DBScan algo
+  bool inCluster = false;
+
   // boid initial colour
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
 
@@ -41,26 +44,11 @@ private:
   // minimum distance before rotating against boundary
   float minDistance = 50.f;
 
-  // factor for acceleration applied at boundary
-  float boundaryForce = 0.01f;
-
-  // stop boids from colliding
-  float seperationFactor = 0.2f;
-
   // range to recognise boids that are too close (for seperation)
   float avoidDistance = 10.f;
 
-  // controls boids overall alignment
-  float alignmentFactor = 0.1f;
-
-  // control the boids urge to turn towards it's local center
-  float cohesionFactor = 0.001f;
-
   // range to recognise other neighbouring boids
   float boidRange = 50.f;
-
-  // highest speed of a boid
-  float boidSpeed = 0.01f;
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.f, 0.f };
@@ -71,6 +59,38 @@ private:
 
   GLuint vao = 0;
   GLuint posVBO = 0;
+};
+
+class BoidCluster {
+public:
+  std::vector<Vec2f> centroids;
+  std::vector<int> clusterCounts;
+};
+
+class BoidSystem {
+public:
+  // boids tp update
+  std::vector<Boid> boids;
+
+  // enable pausing the boids system currently
+  bool isPaused;
+
+  BoidSystem();
+
+  void update(ShaderProgram* prog, float dt);
+  
+private:
+  GLuint vao = 0;
+  GLuint posVBO = 0;
+
+  float const boidColor[3] = { 0.f, 0.5f, 1.f };
+
+  float boidPos[6] = {
+    0.f, 0.01f,
+    -0.005f, -0.005f,
+    0.005f, -0.005f,
+  };
+
 };
 
 #endif
