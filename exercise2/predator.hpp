@@ -5,19 +5,20 @@
 #include <GL/glext.h>
 #include <vector>
 
+#include "boid.hpp"
+
 class Predator{
 public:
-  // single targets outliers, multiple targets clusters
-  enum mode : int {
-	SINGLE,
-	MULTIPLE
-  };
+  // minimum distance to maintain before attack
+  float scoutDistance;
 
-  mode huntState = MULTIPLE;
+  // time between attacks
+  float idleTime;
 
   enum state : int {
 	IDLE,
-	DIVE,
+	MARGIN,
+	CENTER,
   };
 
   state predState = IDLE;
@@ -25,8 +26,9 @@ public:
 private:
   // easier for me to have a seperate draw call for predators, which hunt roughly at pairs max
   GLuint posVBO;
+  GLuint vao;
 
-  float const boidColor[3] = { 1.f, 0.f, 0.f };
+  float const predColor[3] = { 1.f, 0.f, 0.f };
 };
 
 #endif    

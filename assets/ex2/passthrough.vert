@@ -6,6 +6,7 @@
 layout( location = 0 ) in vec2 iPosition;
 layout( location = 1 ) in vec3 iColor;
 
+// it'll be one transform per triangle, might be an issue as this was previously uniform
 layout( location = 0 ) uniform mat3 transform;
 
 // output for fragment shader

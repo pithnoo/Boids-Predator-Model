@@ -19,11 +19,15 @@ public:
   // central position of the boid
   Vec2f position = {0.f, 0.f};
 
-  // indication boid is close to boundary
+  // indication boid is close to boundary (we want boids to move away from it)
   bool atBoundary = false;
 
   // for the DBScan algo
   bool inCluster = false;
+  bool corePoint = false;
+
+  // identify if the boid is at an edge of a flock (primary target)
+  bool isEdge = false;
 
   // boid initial colour
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
@@ -61,10 +65,14 @@ private:
   GLuint posVBO = 0;
 };
 
+// data stored from the clustering algo
 class BoidCluster {
 public:
-  std::vector<Vec2f> centroids;
-  std::vector<int> clusterCounts;
+  // boids at the edge for a primary target
+  std::vector<Boid> edgeBoids;
+  std::vector<Vec2f> clusterCentroid;
+  std::vector<Vec2f> clusterVelocity;
+  std::vector<int> clusterCount;
 };
 
 class BoidSystem {
@@ -72,12 +80,15 @@ public:
   // boids tp update
   std::vector<Boid> boids;
 
+  // for the predator to identify
+  std::vector<BoidCluster> clusters;
+
   // enable pausing the boids system currently
   bool isPaused;
 
-  BoidSystem();
+  BoidSystem(int N) : boids(N) {};
 
-  void update(ShaderProgram* prog, float dt);
+  void update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
   
 private:
   GLuint vao = 0;

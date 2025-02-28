@@ -189,3 +189,40 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindVertexArray(0);
 }
+
+void BoidSystem::update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor){
+
+  glUseProgram(prog);
+
+  std::vector<Vec3f> boidTriangles;
+
+  if(!isPaused){
+	// update boids
+	for(auto &b : boids){
+          b.update(
+				   boids,
+				   prog,
+				   dt,
+				   boidSpeed,
+				   seperationFactor,
+				   alignmentFactor,
+				   cohesionFactor,
+				   boundaryForce,
+				   steeringFactor
+				   );
+
+		  // emplace back the new triangle position
+	}
+  }
+
+  // make posVBO
+
+  // bind vao to store
+  //glBindVertexArray(vao);
+
+  // draw arrays
+  // glDrawArrays( GL_TRIANGLES, 0, triangles.size() );
+
+  glBindVertexArray( 0 );
+  glBindBuffer( GL_ARRAY_BUFFER, 0);
+}
