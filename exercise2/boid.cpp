@@ -263,15 +263,13 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
   */
   glBufferSubData(GL_ARRAY_BUFFER, 0, boidVerts.size() * sizeof(Vec3f),
                   boidVerts.data());
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   // bind vao to store
   glBindVertexArray(vao);
 
   // draw arrays
-  glDrawArrays(GL_TRIANGLES, 0, 100);
+  glDrawArrays(GL_TRIANGLES, 0, boidVerts.size());
   glBindVertexArray(0);
-
-  // glBindBuffer(GL_ARRAY_BUFFER, 0);
-  //  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  //  boidVerts.clear();
+  boidVerts.clear();
 }
