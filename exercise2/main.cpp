@@ -170,7 +170,7 @@ int main() try {
 
   state.prog = &prog;
 
-  std::vector<Boid> boids(300);
+  std::vector<Boid> boids(1);
 
   // boid default values
   float boidSpeed = 0.01f;
