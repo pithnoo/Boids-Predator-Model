@@ -175,8 +175,6 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
   // set false until proven otherwise on the next frame
   atBoundary = false;
 
-  // std::printf("%.2f, %.2f\n", position.x, position.y);
-
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);
 
