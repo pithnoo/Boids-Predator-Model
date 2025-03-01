@@ -1,6 +1,6 @@
 #include "boid.hpp"
 
-Boid::Boid(){
+Boid::Boid() {
   // calculate boid size (co-ordinates should be decided so scale of the boid?)
   float x = (std::rand() % 1000 * 0.002f) - 1.0f;
   float y = (std::rand() % 1000 * 0.002f) - 1.0f;
@@ -21,11 +21,11 @@ Boid::Boid(){
   glBindVertexArray(vao);
   glBindBuffer(GL_ARRAY_BUFFER, posVBO);
   glVertexAttribPointer(
-			   0,
-			   2, GL_FLOAT, GL_FALSE,
-			   0,
-			   0
-			   );
+                           0,
+                           2, GL_FLOAT, GL_FALSE,
+                           0,
+                           0
+                           );
   glEnableVertexAttribArray(0);
 
   glBindVertexArray(0);
@@ -36,7 +36,10 @@ Boid::Boid(){
   */
 }
 
-Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor){
+Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
+                    float boidSpeed, float seperationFactor,
+                    float alignmentFactor, float cohesionFactor,
+                    float boundaryForce, float steeringFactor) {
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -46,12 +49,11 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
   // conversion of NDC coordinates to the current screen coordinates
   float dX = std::min(dLeft, dRight) * 640.f;
 
-  if(dX < minDistance){
-	atBoundary = true;
-    if(dLeft < dRight){
+  if (dX < minDistance) {
+    atBoundary = true;
+    if (dLeft < dRight) {
       acceleration.x += boundaryForce;
-    }
-    else{
+    } else {
       acceleration.x -= boundaryForce;
     }
   }
@@ -61,12 +63,11 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
 
   float dY = std::min(dBottom, dTop) * 360.f;
 
-  if(dY < minDistance){
-	atBoundary = true;
-    if(dBottom < dTop){
+  if (dY < minDistance) {
+    atBoundary = true;
+    if (dBottom < dTop) {
       acceleration.y += boundaryForce;
-    }
-    else{
+    } else {
       acceleration.y -= boundaryForce;
     }
   }
@@ -80,71 +81,74 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
   float neighbourDistance;
 
   // looping over neighbours
-  for(auto &b : boids){
-	// skip boid that is in exact position
-	if(b.position == position)
-	  continue;
+  for (auto &b : boids) {
+    // skip boid that is in exact position
+    if (b.position == position)
+      continue;
 
-	// calculating the square of x and y
-	// TODO: change accordingly depending on the surface height
-	dx = std::pow((position.x - b.position.x) * 640.f, 2);
-	dy = std::pow((position.y - b.position.y) * 360.f, 2);
+    // calculating the square of x and y
+    // TODO: change accordingly depending on the surface height
+    dx = std::pow((position.x - b.position.x) * 640.f, 2);
+    dy = std::pow((position.y - b.position.y) * 360.f, 2);
 
-	// pythagorus to find distance between neighbours
-	neighbourDistance = std::sqrt(dx + dy);
-	
-	if(neighbourDistance <= boidRange && b.atBoundary == false){
-	  neighbours.emplace_back(b);
+    // pythagorus to find distance between neighbours
+    neighbourDistance = std::sqrt(dx + dy);
 
-	  // if its really close, we gotta avoid it
-	  if(neighbourDistance <= avoidDistance){
-		closeNeighbours.emplace_back(b);
-	  }
-	}
+    if (neighbourDistance <= boidRange && b.atBoundary == false) {
+      neighbours.emplace_back(b);
 
-	// reducing the number of iterations, as we don't need to take the whole flock
-	if(closeNeighbours.size() >= 3)
-	  break;
+      // if its really close, we gotta avoid it
+      if (neighbourDistance <= avoidDistance) {
+        closeNeighbours.emplace_back(b);
+      }
+    }
+
+    // reducing the number of iterations, as we don't need to take the whole
+    // flock
+    if (closeNeighbours.size() >= 3)
+      break;
   }
 
   Vec2f ruleAcceleration = {0.f, 0.f};
-  
+
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
 
-  for(auto &n : closeNeighbours){
-	// normalize this vector to prevent further boids from having a greater influence
-	averageSeperation += normalize(position - n.position);
+  for (auto &n : closeNeighbours) {
+    // normalize this vector to prevent further boids from having a greater
+    // influence
+    averageSeperation += normalize(position - n.position);
   }
 
-  if(closeNeighbours.size() > 0)
-	ruleAcceleration += normalize(averageSeperation) * seperationFactor;
+  if (closeNeighbours.size() > 0)
+    ruleAcceleration += normalize(averageSeperation) * seperationFactor;
 
   // alignment: steer towards the average heading of the flock
   Vec2f averageAlignment = {0.f, 0.f};
 
-  for(auto &n : neighbours){
-	averageAlignment += n.velocity;
+  for (auto &n : neighbours) {
+    averageAlignment += n.velocity;
   }
 
-  // if we take the average, then higher velocities will take priority in direction
-  if(neighbours.size() > 0)
-	ruleAcceleration += normalize(averageAlignment) * alignmentFactor;
-  
+  // if we take the average, then higher velocities will take priority in
+  // direction
+  if (neighbours.size() > 0)
+    ruleAcceleration += normalize(averageAlignment) * alignmentFactor;
+
   // cohesion: steer the boid towards the local center of the flock
   Vec2f averagePosition = {0.f, 0.f};
 
   // take influence of only boids that are not at the boundary
-  for(auto &n : neighbours){
-	averagePosition += n.position;
+  for (auto &n : neighbours) {
+    averagePosition += n.position;
   }
 
   // accounts for if no neighbours (i.e. prevents division by 0)
-  if(neighbours.size() > 0)
-	averagePosition /= neighbours.size();
+  if (neighbours.size() > 0)
+    averagePosition /= neighbours.size();
 
   // why check if this isn't 0?
-  if(neighbours.size() > 0)
+  if (neighbours.size() > 0)
     ruleAcceleration += normalize(averagePosition - position) * cohesionFactor;
 
   // average out the influence of the 3 rules
@@ -164,8 +168,9 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
   position.x += velocity.x * dt;
   position.y += velocity.y * dt;
 
-  // the rotation of the boid can be calcualted by the current acceleration vector
-  rotation = std::atan2(velocity.y, velocity.x) - (M_PI / 2.0f);
+  // the rotation of the boid can be calcualted by the current acceleration
+  // vector rotation = std::atan2(velocity.y, velocity.x) - (M_PI / 2.0f);
+  rotation = std::atan2(velocity.y, velocity.x);
 
   // we can clear current neighbours once we calculate resultant acceleration
   neighbours.clear();
@@ -178,9 +183,10 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
   atBoundary = false;
 
   // make the matrix for current boid position
-  Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);
+  Mat33f boidTransform = make_translation_3H({position.x, position.y}) *
+                         make_rotation_3H(rotation);
 
-  std::printf("%.3f %.3f,\n", position.x, position.y);
+  // std::printf("%.3f %.3f,\n", position.x, position.y);
   return boidTransform;
 
   /*
@@ -194,80 +200,78 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
   */
 }
 
-BoidSystem::BoidSystem(int N) : boids(N){
-  // there will only be one instance of this, as all boids will be using the same shape
+BoidSystem::BoidSystem(int N) : boids(N) {
+  // there will only be one instance of this, as all boids will be using the
+  // same shape
   glGenBuffers(1, &posVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+  glBufferData(GL_ARRAY_BUFFER, N * 3 * sizeof(Vec3f), nullptr,
+               GL_DYNAMIC_DRAW);
+
+  /*
   // glBindBuffer(GL_ARRAY_BUFFER, posVBO);
   // glBufferData(GL_ARRAY_BUFFER, N*3*sizeof(Vec3f), nullptr, GL_DYNAMIC_DRAW);
+  */
 
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
-
-  glBindBuffer( GL_ARRAY_BUFFER, posVBO );
-  glVertexAttribPointer(
-						0,
-						3, GL_FLOAT, GL_FALSE,
-						0,
-						0);
+  glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);
 
   // delete vbo, as it has now been stored in vao
   // glDeleteBuffers(1, &posVBO);
 }
 
-void BoidSystem::update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor){
+void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
+                        float seperationFactor, float alignmentFactor,
+                        float cohesionFactor, float boundaryForce,
+                        float steeringFactor) {
 
   glUseProgram(prog->programId());
 
-  //std::vector<Mat33f> transformations;
+  // std::vector<Mat33f> transformations;
   std::vector<Vec3f> boidVerts;
 
-  if(!isPaused){
-	// update boids
-	for(auto &b : boids){
-          Mat33f transformation = b.update(
-				   boids,
-				   prog,
-				   dt,
-				   boidSpeed,
-				   seperationFactor,
-				   alignmentFactor,
-				   cohesionFactor,
-				   boundaryForce,
-				   steeringFactor
-				   );
+  if (!isPaused) {
+    // update boids
+    for (auto &b : boids) {
+      Mat33f transformation = b.update(
+          boids, prog, dt, boidSpeed, seperationFactor, alignmentFactor,
+          cohesionFactor, boundaryForce, steeringFactor);
 
-		  for(auto &v : b.boidPositions){
-			Vec3f newPos = transformation * v;
-			boidVerts.emplace_back(newPos);
-		  }
-	}
+      int ver = 0;
+      for (auto &v : b.boidPositions) {
+        // Vec3f newPos = transformation * v;
+        Vec3f newPos = Vec3f(b.position.x, b.position.y, 1.f) + v;
+        // std::printf("---------------\n");
+        // std::printf("vertex: %i: %.4f %.4f,\n", ver, v.x, v.y);
+        // std::printf("New position %i: %.4f %.4f,\n", ver, newPos.x,
+        // newPos.y);
+        ver++;
+        boidVerts.emplace_back(newPos);
+      }
+    }
   }
 
   // posVBO
   glBindBuffer(GL_ARRAY_BUFFER, posVBO);
-
   /*
-  glBufferSubData(GL_ARRAY_BUFFER,
-				  0,
-				  boidVerts.size() * sizeof(Vec3f),
-				  boidVerts.data());
+  glBufferData(GL_ARRAY_BUFFER, boidVerts.size() * sizeof(Vec3f),
+               boidVerts.data(), GL_STATIC_DRAW);
+
   */
-
-  glBufferData(GL_ARRAY_BUFFER,
-			   boidVerts.size() * sizeof(Vec3f),
-			   boidVerts.data(),
-			   GL_STATIC_DRAW);
-
-  //glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, boidVerts.size() * sizeof(Vec3f),
+                  boidVerts.data());
 
   // bind vao to store
-  glBindVertexArray(this->vao);
+  glBindVertexArray(vao);
 
   // draw arrays
-  glDrawArrays(GL_TRIANGLES, 0, boidVerts.size());
-
-  // boidVerts.clear();
+  glDrawArrays(GL_TRIANGLES, 0, 100);
   glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  // glBindBuffer(GL_ARRAY_BUFFER, 0);
+  //  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  //  boidVerts.clear();
 }

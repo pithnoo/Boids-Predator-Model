@@ -172,10 +172,10 @@ int main() try {
 
   state.prog = &prog;
 
-  BoidSystem bs(3);
+  BoidSystem bs(500);
 
   // boid default values
-  float boidSpeed = 0.5f;
+  float boidSpeed = 0.1f;
   float seperationFactor = 0.f;
   float alignmentFactor = 0.f;
   float cohesionFactor = 0.f;
@@ -260,7 +260,6 @@ int main() try {
 			  boundaryForce,
 			  steeringFactor
 			  );
-
 
     // render gui window
     ImGui::Render();
