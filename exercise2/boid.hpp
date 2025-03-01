@@ -42,7 +42,7 @@ public:
   // initialise boid
   Boid();
 
-  void update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
+  Mat33f update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
 
 private:
   // minimum distance before rotating against boundary
@@ -65,7 +65,6 @@ private:
   GLuint posVBO = 0;
 };
 
-// data stored from the clustering algo
 class BoidCluster {
 public:
   // boids at the edge for a primary target
@@ -86,13 +85,14 @@ public:
   // enable pausing the boids system currently
   bool isPaused;
 
-  BoidSystem(int N) : boids(N) {};
+  BoidSystem(int N);
 
   void update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
   
 private:
   GLuint vao = 0;
   GLuint posVBO = 0;
+  GLuint insVBO = 0;
 
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
 

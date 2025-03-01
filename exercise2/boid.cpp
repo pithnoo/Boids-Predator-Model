@@ -34,7 +34,7 @@ Boid::Boid(){
   glDeleteBuffers(1, &posVBO);
 }
 
-void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor){
+Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor){
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -178,6 +178,9 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);
 
+  return boidTransform;
+
+  /*
   glUseProgram(prog->programId());
 
   // draw the boid in environment
@@ -188,18 +191,54 @@ void Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float
 
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glBindVertexArray(0);
+  */
+}
+
+BoidSystem::BoidSystem(int N) : boids(N){
+  // creating an empty system to hold the max number of boids
+  /*
+  glGenBuffers(1, &insVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, insVBO);
+  glBufferData(GL_ARRAY_BUFFER, N*sizeof(Mat33f), nullptr, GL_DYNAMIC_DRAW);
+  */
+
+  // there will only be one instance of this, as all boids will be using the same shape
+  glGenBuffers(1, &posVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(boidPos), boidPos, GL_STATIC_DRAW);
+
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
+  glEnableVertexAttribArray(0);
+  glBindBuffer( GL_ARRAY_BUFFER, posVBO );
+  glVertexAttribPointer(
+						0,
+						2, GL_FLOAT, GL_FALSE,
+						0,
+						0);
+
+  //glEnableVertexAttribArray(1);
+  //glBindBuffer(GL_ARRAY_BUFFER, insVBO);
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  // delete vbo, as it has now been stored in vao
+  glDeleteBuffers(1, &posVBO);
 }
 
 void BoidSystem::update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor){
 
-  glUseProgram(prog);
+  glUseProgram(prog->programId());
 
   std::vector<Vec3f> boidTriangles;
+  std::vector<Mat33f> transformations;
 
   if(!isPaused){
 	// update boids
 	for(auto &b : boids){
-          b.update(
+          Mat33f transformation = b.update(
 				   boids,
 				   prog,
 				   dt,
@@ -212,17 +251,28 @@ void BoidSystem::update(ShaderProgram* prog, float dt, float boidSpeed, float se
 				   );
 
 		  // emplace back the new triangle position
+		  transformations.emplace_back(transformation);
 	}
   }
 
-  // make posVBO
+  // transVBO
+  /*
+  glBindBuffer(GL_ARRAY_BUFFER, insVBO);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, transformations.size() * sizeof(Mat33f), transformations.data());
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  */
+
+  // set divisor for the VBO
+
+  // posVBO
+  // might not need to cus this doesn't change?
 
   // bind vao to store
-  //glBindVertexArray(vao);
+  glBindVertexArray(vao);
 
   // draw arrays
-  // glDrawArrays( GL_TRIANGLES, 0, triangles.size() );
+  glDrawArrays(GL_TRIANGLES, 0, 3);
 
   glBindVertexArray( 0 );
-  glBindBuffer( GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
