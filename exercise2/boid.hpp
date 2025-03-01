@@ -19,6 +19,9 @@ public:
   // central position of the boid
   Vec2f position = {0.f, 0.f};
 
+  // what direction the boid is pointing at
+  float rotation = 0;
+
   // indication boid is close to boundary (we want boids to move away from it)
   bool atBoundary = false;
 
@@ -58,8 +61,6 @@ private:
   Vec2f acceleration = { 0.f, 0.f };
   Vec2f velocity = { 0.f, 0.f };
 
-  // what direction the boid is pointing at
-  float rotation = 0;
 };
 
 class BoidCluster {

@@ -54,16 +54,15 @@ inline Mat33f operator*(Mat33f const& aLeft, Mat33f const& aRight){
 
 // matrix with vector
 inline Vec3f operator*(Mat33f &aLeft, Vec3f &aRight){
-  Vec3f r{0.f};
+  Vec3f r {0.f};
 
-  for(int i = 0; i < 3; i++){
-	for(int j = 0; j < 3; j++){
-	  r[i] = 0.f;
+  for (int i = 0; i < 3; ++i) {
+	for (int j = 0; j < 3; ++j) {
 	  r[i] += aLeft(i, j) * aRight[j];
 	}
   }
 
-  return r;
+  return r;	
 }
 
 // homogenous rotation
