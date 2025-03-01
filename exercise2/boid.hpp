@@ -86,11 +86,12 @@ public:
   BoidSystem(int N);
 
   void update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
+
+  void draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer);
   
 private:
   GLuint vao = 0;
   GLuint posVBO = 0;
-  GLuint insVBO = 0;
 
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
 };

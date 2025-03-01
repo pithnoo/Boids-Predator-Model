@@ -183,9 +183,7 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
                         float cohesionFactor, float boundaryForce,
                         float steeringFactor) {
 
-  glUseProgram(prog->programId());
-
-  std::vector<Vec3f> boidPosBuffer;
+  std::vector<Vec3f> boidBuffer;
 
   if (!isPaused) {
     for (auto &b : boids) {
@@ -195,22 +193,29 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
       for (auto &v : b.boidPositions) {
 		Vec3f newPos = transformation * v;
-        boidPosBuffer.emplace_back(newPos);
+        boidBuffer.emplace_back(newPos);
       }
     }
   }
 
+  draw(prog, boidBuffer);
+}
+
+void BoidSystem::draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer){
+  glUseProgram(prog->programId());
+
   // posVBO
   glBindBuffer(GL_ARRAY_BUFFER, posVBO);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, boidPosBuffer.size() * sizeof(Vec3f),
-                  boidPosBuffer.data());
+  glBufferSubData(GL_ARRAY_BUFFER, 0, boidBuffer.size() * sizeof(Vec3f),
+                  boidBuffer.data());
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   // bind vao to store
   glBindVertexArray(vao);
 
   // draw arrays
-  glDrawArrays(GL_TRIANGLES, 0, boidPosBuffer.size());
+  glDrawArrays(GL_TRIANGLES, 0, boidBuffer.size());
   glBindVertexArray(0);
-  boidPosBuffer.clear();
+  boidBuffer.clear();
+
 }
