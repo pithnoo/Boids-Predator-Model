@@ -180,7 +180,9 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
   // make the matrix for current boid position
   Mat33f boidTransform = make_translation_3H({position.x, position.y}) * make_rotation_3H(rotation);
 
+  std::printf("%.3f %.3f,\n", position.x, position.y);
   return boidTransform;
+
   /*
   glUseProgram(prog->programId());
   // draw the boid in environment
@@ -195,19 +197,19 @@ Mat33f Boid::update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, flo
 BoidSystem::BoidSystem(int N) : boids(N){
   // there will only be one instance of this, as all boids will be using the same shape
   glGenBuffers(1, &posVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, posVBO);
-  glBufferData(GL_ARRAY_BUFFER, N*3*sizeof(Vec3f), nullptr, GL_DYNAMIC_DRAW);
+  // glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+  // glBufferData(GL_ARRAY_BUFFER, N*3*sizeof(Vec3f), nullptr, GL_DYNAMIC_DRAW);
 
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
-  glEnableVertexAttribArray(0);
   glBindBuffer( GL_ARRAY_BUFFER, posVBO );
   glVertexAttribPointer(
 						0,
 						3, GL_FLOAT, GL_FALSE,
 						0,
 						0);
+  glEnableVertexAttribArray(0);
 
   // delete vbo, as it has now been stored in vao
   // glDeleteBuffers(1, &posVBO);
@@ -238,23 +240,25 @@ void BoidSystem::update(ShaderProgram* prog, float dt, float boidSpeed, float se
 		  for(auto &v : b.boidPositions){
 			Vec3f newPos = transformation * v;
 			boidVerts.emplace_back(newPos);
-			std::printf("%.3f %.3f, %.3f\n", newPos.x, newPos.y, newPos.z);
 		  }
 	}
   }
 
   // posVBO
   glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+
   /*
   glBufferSubData(GL_ARRAY_BUFFER,
 				  0,
 				  boidVerts.size() * sizeof(Vec3f),
 				  boidVerts.data());
   */
+
   glBufferData(GL_ARRAY_BUFFER,
 			   boidVerts.size() * sizeof(Vec3f),
 			   boidVerts.data(),
 			   GL_STATIC_DRAW);
+
   //glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   // bind vao to store
