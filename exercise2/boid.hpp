@@ -33,10 +33,10 @@ public:
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
 
   // initial boid positions
-  float boidPos[6] = {
-    0.f, 0.01f,
-    -0.005f, -0.005f,
-    0.005f, -0.005f,
+  std::vector<Vec3f> boidPositions = {
+	Vec3f(0.f, 0.01f, 1.f),
+	Vec3f(-0.005f, -0.005f, 1.f),
+	Vec3f(0.005f, -0.005f, 1.f),
   };
 
   // initialise boid
@@ -60,9 +60,6 @@ private:
 
   // what direction the boid is pointing at
   float rotation = 0;
-
-  GLuint vao = 0;
-  GLuint posVBO = 0;
 };
 
 class BoidCluster {
@@ -95,13 +92,6 @@ private:
   GLuint insVBO = 0;
 
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
-
-  float boidPos[6] = {
-    0.f, 0.01f,
-    -0.005f, -0.005f,
-    0.005f, -0.005f,
-  };
-
 };
 
 #endif

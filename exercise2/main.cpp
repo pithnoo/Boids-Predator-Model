@@ -172,10 +172,10 @@ int main() try {
 
   state.prog = &prog;
 
-  std::vector<Boid> boids(300);
+  BoidSystem bs(3);
 
   // boid default values
-  float boidSpeed = 0.15f;
+  float boidSpeed = 0.5f;
   float seperationFactor = 0.f;
   float alignmentFactor = 0.f;
   float cohesionFactor = 0.f;
@@ -234,6 +234,7 @@ int main() try {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // update each set of boids
+	/*
     for(auto &b : boids){
 	  b.update(
 			   boids,
@@ -247,6 +248,19 @@ int main() try {
 			   steeringFactor
 			   );
     }
+	*/
+
+	bs.update(
+			  state.prog,
+			  dt,
+			  boidSpeed,
+			  seperationFactor,
+			  alignmentFactor,
+			  cohesionFactor,
+			  boundaryForce,
+			  steeringFactor
+			  );
+
 
     // render gui window
     ImGui::Render();
