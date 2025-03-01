@@ -26,8 +26,10 @@ public:
   bool atBoundary = false;
 
   // for the DBScan algo
+  std::vector<Boid> closeNeighbours;
+  bool isNoise = false;
+  bool isVisited = false;
   bool inCluster = false;
-  bool corePoint = false;
 
   // identify if the boid is at an edge of a flock (primary target)
   bool isEdge = false;
@@ -54,22 +56,22 @@ private:
   // range to recognise boids that are too close (for seperation)
   float avoidDistance = 10.f;
 
-  // range to recognise other neighbouring boids
+  // range to recognise other neighbouring boids (Note: also for DBscan)
   float boidRange = 50.f;
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.f, 0.f };
   Vec2f velocity = { 0.f, 0.f };
-
 };
 
 class BoidCluster {
 public:
   // boids at the edge for a primary target
   std::vector<Boid> edgeBoids;
-  std::vector<Vec2f> clusterCentroid;
-  std::vector<Vec2f> clusterVelocity;
-  std::vector<int> clusterCount;
+  std::vector<Boid> clusterBoids;
+  Vec2f clusterCentroid;
+  Vec2f clusterVelocity;
+  int clusterCount;
 };
 
 class BoidSystem {

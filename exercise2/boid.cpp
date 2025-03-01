@@ -49,8 +49,8 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
 
   std::vector<Boid> neighbours;
 
-  // for seperation rule
-  std::vector<Boid> closeNeighbours;
+  // for seperation rule and DBscan
+  // std::vector<Boid> closeNeighbours;
 
   float dx, dy;
   float neighbourDistance;
@@ -80,8 +80,12 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
 
     // reducing the number of iterations, as we don't need to take the whole
     // flock
-    if (closeNeighbours.size() >= 3)
+    if (closeNeighbours.size() >= 5) {
+      isNoise = false;
       break;
+    } else {
+      isNoise = true;
+    }
   }
 
   Vec2f ruleAcceleration = {0.f, 0.f};
@@ -184,24 +188,58 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
                         float steeringFactor) {
 
   std::vector<Vec3f> boidBuffer;
+  std::vector<BoidCluster> clusters;
 
   if (!isPaused) {
     for (auto &b : boids) {
+      // calculating transformation
       Mat33f transformation = b.update(
           boids, prog, dt, boidSpeed, seperationFactor, alignmentFactor,
           cohesionFactor, boundaryForce, steeringFactor);
 
       for (auto &v : b.boidPositions) {
-		Vec3f newPos = transformation * v;
+        Vec3f newPos = transformation * v;
         boidBuffer.emplace_back(newPos);
       }
+      // calculating transformation
+
+      // scanning for clusters
+      BoidCluster cluster;
+
+	  // skip visited boids
+	  if(b.isVisited || b.isNoise) continue;
+
+	  // next cluster
+	  if(cluster.clusterCount != 0)
+		clusters.emplace_back(cluster);
+
+	  cluster.clusterBoids.emplace_back(b);
+	  b.inCluster = true;
+
+	  for(auto &n : b.closeNeighbours){
+		if(n.isVisited) continue;
+		n.isVisited = true;
+
+		if(!n.isNoise){
+		  continue;
+		}
+
+		if(!n.inCluster){
+		  cluster.clusterBoids.emplace_back(n);
+		  n.inCluster = true;
+		}
+	  }
+      // scanning for clusters
     }
   }
+
+  // update and find boid clusters
+  // dbscan algo
 
   draw(prog, boidBuffer);
 }
 
-void BoidSystem::draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer){
+void BoidSystem::draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer) {
   glUseProgram(prog->programId());
 
   // posVBO
@@ -217,5 +255,4 @@ void BoidSystem::draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer){
   glDrawArrays(GL_TRIANGLES, 0, boidBuffer.size());
   glBindVertexArray(0);
   boidBuffer.clear();
-
 }
