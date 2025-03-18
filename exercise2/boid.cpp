@@ -77,7 +77,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
       // if its really close, we gotta avoid it
       if (neighbourDistance <= avoidDistance) {
         closeNeighbours.emplace_back(b);
-		dbNeighbours.emplace_back(b);
+        dbNeighbours.emplace_back(b);
       }
     }
     // for DBScan
@@ -85,22 +85,21 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     // reducing the number of iterations, as we don't need to take the whole
     // flock
     if (closeNeighbours.size() >= 3) {
-	  isCore = true;
+      isCore = true;
       break;
+    } else {
+      isCore = false;
     }
-	else{
-	  isCore = false;
-	}
   }
 
   /*
   // make a deep copy of closeNeighbours
   if(isCore && !copyLock){
-	copyLock = true;
-	dbNeighbours.resize(closeNeighbours.size());
-	std::copy(closeNeighbours.begin(), closeNeighbours.end(),
+        copyLock = true;
+        dbNeighbours.resize(closeNeighbours.size());
+        std::copy(closeNeighbours.begin(), closeNeighbours.end(),
   dbNeighbours.begin());
-	//dbNeighbours = closeNeighbours;
+        //dbNeighbours = closeNeighbours;
   }
   */
 
@@ -220,7 +219,6 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       // calculating transformation
 
       // scanning for clusters
-
       // has the boid been labelled / visited?
       if (b.isVisited)
         continue;
@@ -234,39 +232,58 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
       // make a new cluster
       BoidCluster cluster;
-	  b.inCluster = true;
+	  cluster.clusterBoids.clear();
+	  cluster.clusterCount = 0;
+
+      b.inCluster = true;
       cluster.clusterBoids.emplace_back(b);
       cluster.clusterCount++;
 
-	  // std::printf("size: %li\n", b.dbNeighbours.size());
-
-      for (auto &n : b.dbNeighbours) {
+      size_t i = 0;
+      while (i < b.dbNeighbours.size()) {
+        Boid &n = b.dbNeighbours[i];
         if (!n.isVisited) {
           n.isVisited = true;
+          std::printf("copied!, %li, %li\n", b.dbNeighbours.size(), n.dbNeighbours.size());
+          // concatenate neighbours to the current set
+          b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(),
+                                n.dbNeighbours.end());
 
-		  // problem: neighbouring set is empty
-		  std::printf("copied!, %li, %li\n", b.dbNeighbours.size(), n.dbNeighbours.size());
-		  
-		  // concatenate neighbours to the current set
-		  b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(), n.dbNeighbours.end());
+          // reset: we gotta check again as the size has now changed
+          i = 0;
+          continue;
         }
         if (!n.inCluster) {
           n.inCluster = true;
           cluster.clusterBoids.emplace_back(n);
           cluster.clusterCount++;
         }
+        // scanning for clusters
+        b.isVisited = true;
+        
+        // update i until it reaches the final size
+        i++;
       }
-      // scanning for clusters
-	  b.isVisited = true;
 
 	  // add the cluster
-	  clusters.emplace_back(cluster);
+	  if (cluster.clusterCount > 0) {
+		//std::printf("added size: %i\r", cluster.clusterCount);
+		clusters.emplace_back(cluster);
+	  }
     }
   }
 
-  for(auto &b : boids){
-	b.dbNeighbours.clear();
+  // reset values for next scan
+  for (auto &b : boids) {
+    b.dbNeighbours.clear();
+	b.isVisited = false;
+	b.isNoise = false;
+	b.isCore = false;
+	b.inCluster = false;
   }
+
+  //std::printf("Cluster count: %li\r", clusters.size());
+  clusters.clear();
 
   draw(prog, boidBuffer);
 }
