@@ -26,13 +26,12 @@ public:
   bool atBoundary = false;
 
   // for the DBScan algo
-  std::vector<Boid> closeNeighbours;
+  std::vector<Boid> dbNeighbours;
   bool isNoise = false;
   bool isVisited = false;
+  bool isCore = false;
   bool inCluster = false;
-
-  // identify if the boid is at an edge of a flock (primary target)
-  bool isEdge = false;
+  // for the DBScan algo
 
   // boid initial colour
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
@@ -50,6 +49,8 @@ public:
   Mat33f update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
 
 private:
+  std::vector<Boid> closeNeighbours;
+
   // minimum distance before rotating against boundary
   float minDistance = 50.f;
 

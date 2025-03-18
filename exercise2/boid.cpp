@@ -69,6 +69,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     // pythagorus to find distance between neighbours
     neighbourDistance = std::sqrt(dx + dy);
 
+	// TODO: put an angle here for boid sight range
     if (neighbourDistance <= boidRange && b.atBoundary == false) {
       neighbours.emplace_back(b);
 
@@ -77,6 +78,11 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
         closeNeighbours.emplace_back(b);
       }
     }
+
+	// for DBScan
+	if(neighbourDistance <= avoidDistance){
+	  dbNeighbours.emplace_back(b);
+	}
 
     // reducing the number of iterations, as we don't need to take the whole
     // flock
@@ -204,29 +210,37 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       // calculating transformation
 
       // scanning for clusters
+	  // has the boid been labelled / visited?
+	  if(b.isVisited) continue;
+
+	  b.isVisited = true;
+
+	  // is b a core point?
+	  if(!b.isCore){
+		b.isNoise = true;
+		continue;
+	  }
+	  
+	  // make a new cluster
       BoidCluster cluster;
-
-	  // skip visited boids
-	  if(b.isVisited || b.isNoise) continue;
-
-	  // next cluster
-	  if(cluster.clusterCount != 0)
-		clusters.emplace_back(cluster);
-
 	  cluster.clusterBoids.emplace_back(b);
-	  b.inCluster = true;
+	  cluster.clusterCount++;
 
-	  for(auto &n : b.closeNeighbours){
-		if(n.isVisited) continue;
-		n.isVisited = true;
-
-		if(!n.isNoise){
-		  continue;
+	  for(auto &n : b.dbNeighbours){
+		if(!n.isVisited){
+		  n.isVisited = true;
+		  if(n.isCore){
+			// concatenate neighbours to the current set
+			//b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(), n.dbNeighbours.end());
+			for(auto &c : n.dbNeighbours){
+			  b.dbNeighbours.emplace_back(c);
+			}
+		  }
 		}
-
 		if(!n.inCluster){
-		  cluster.clusterBoids.emplace_back(n);
 		  n.inCluster = true;
+		  cluster.clusterBoids.emplace_back(n);
+		  cluster.clusterCount++;
 		}
 	  }
       // scanning for clusters
