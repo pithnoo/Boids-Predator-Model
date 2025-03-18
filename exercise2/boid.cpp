@@ -244,16 +244,11 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
         if (!n.isVisited) {
           n.isVisited = true;
 
-		  // note: this should be true, but it doesn't update
-          //if (n.isCore == false) {
-          //}
-
 		  // problem: neighbouring set is empty
-		  std::printf("copied2!, %li, %li\n", b.dbNeighbours.size(), n.dbNeighbours.size());
+		  std::printf("copied!, %li, %li\n", b.dbNeighbours.size(), n.dbNeighbours.size());
 		  
 		  // concatenate neighbours to the current set
 		  b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(), n.dbNeighbours.end());
-
         }
         if (!n.inCluster) {
           n.inCluster = true;
@@ -269,14 +264,9 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
     }
   }
 
-  // problem is not here
   for(auto &b : boids){
-	// unlock for another db array copy
-	// b.copyLock = false;
 	b.dbNeighbours.clear();
   }
-
-  // dbscan algo
 
   draw(prog, boidBuffer);
 }
