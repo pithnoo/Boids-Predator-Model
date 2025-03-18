@@ -27,11 +27,15 @@ public:
 
   // for the DBScan algo
   std::vector<Boid> dbNeighbours;
+  std::vector<Boid> neighbours;
+  std::vector<Boid> closeNeighbours;
+
   bool isNoise = false;
   bool isVisited = false;
   bool isCore = false;
   bool inCluster = false;
-  // for the DBScan algo
+
+  bool copyLock = false;
 
   // boid initial colour
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
@@ -46,10 +50,22 @@ public:
   // initialise boid
   Boid();
 
+  Boid& operator=(const Boid &boid){
+	neighbours = boid.neighbours;
+	closeNeighbours = boid.closeNeighbours;
+	dbNeighbours = boid.dbNeighbours;
+	acceleration = boid.acceleration;
+	velocity = boid.velocity;
+	isNoise = boid.isNoise;
+	isVisited = boid.isVisited;
+	isCore = boid.isCore;
+	inCluster = boid.inCluster;
+	return *this;
+  }
+
   Mat33f update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
 
 private:
-  std::vector<Boid> closeNeighbours;
 
   // minimum distance before rotating against boundary
   float minDistance = 50.f;

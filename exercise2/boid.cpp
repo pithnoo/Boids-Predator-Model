@@ -47,13 +47,14 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     }
   }
 
-  std::vector<Boid> neighbours;
-
   // for seperation rule and DBscan
+  // std::vector<Boid> neighbours;
   // std::vector<Boid> closeNeighbours;
 
   float dx, dy;
   float neighbourDistance;
+
+  isVisited = false;
 
   // looping over neighbours
   for (auto &b : boids) {
@@ -69,27 +70,39 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     // pythagorus to find distance between neighbours
     neighbourDistance = std::sqrt(dx + dy);
 
-	// TODO: put an angle here for boid sight range
+    // TODO: put an angle here for boid sight range
     if (neighbourDistance <= boidRange && b.atBoundary == false) {
       neighbours.emplace_back(b);
 
       // if its really close, we gotta avoid it
       if (neighbourDistance <= avoidDistance) {
         closeNeighbours.emplace_back(b);
+		dbNeighbours.emplace_back(b);
       }
     }
-
-	// for DBScan
-	if(neighbourDistance <= avoidDistance){
-	  dbNeighbours.emplace_back(b);
-	}
+    // for DBScan
 
     // reducing the number of iterations, as we don't need to take the whole
     // flock
     if (closeNeighbours.size() >= 3) {
+	  isCore = true;
       break;
+    }
+	else{
+	  isCore = false;
 	}
   }
+
+  /*
+  // make a deep copy of closeNeighbours
+  if(isCore && !copyLock){
+	copyLock = true;
+	dbNeighbours.resize(closeNeighbours.size());
+	std::copy(closeNeighbours.begin(), closeNeighbours.end(),
+  dbNeighbours.begin());
+	//dbNeighbours = closeNeighbours;
+  }
+  */
 
   Vec2f ruleAcceleration = {0.f, 0.f};
 
@@ -207,46 +220,62 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       // calculating transformation
 
       // scanning for clusters
-	  // has the boid been labelled / visited?
-	  if(b.isVisited) continue;
 
+      // has the boid been labelled / visited?
+      if (b.isVisited)
+        continue;
+
+      // problem: boid is never a core point?
+      // is b a core point?
+      if (b.isCore == false) {
+        b.isNoise = true;
+        continue;
+      }
+
+      // make a new cluster
+      BoidCluster cluster;
+	  b.inCluster = true;
+      cluster.clusterBoids.emplace_back(b);
+      cluster.clusterCount++;
+
+	  // std::printf("size: %li\n", b.dbNeighbours.size());
+
+      for (auto &n : b.dbNeighbours) {
+        if (!n.isVisited) {
+          n.isVisited = true;
+
+		  // note: this should be true, but it doesn't update
+          //if (n.isCore == false) {
+          //}
+
+		  // problem: neighbouring set is empty
+		  std::printf("copied2!, %li, %li\n", b.dbNeighbours.size(), n.dbNeighbours.size());
+		  
+		  // concatenate neighbours to the current set
+		  b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(), n.dbNeighbours.end());
+
+        }
+        if (!n.inCluster) {
+          n.inCluster = true;
+          cluster.clusterBoids.emplace_back(n);
+          cluster.clusterCount++;
+        }
+      }
+      // scanning for clusters
 	  b.isVisited = true;
 
-	  // is b a core point?
-	  if(!b.isCore){
-		b.isNoise = true;
-		continue;
-	  }
-	  
-	  // make a new cluster
-      BoidCluster cluster;
-	  //cluster.clusterBoids.emplace_back(b);
-	  //cluster.clusterCount++;
-
-	  /*
-	  for(auto &n : b.dbNeighbours){
-		if(!n.isVisited){
-		  n.isVisited = true;
-		  if(n.isCore){
-			// concatenate neighbours to the current set
-			//b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(), n.dbNeighbours.end());
-			for(auto &c : n.dbNeighbours){
-			  b.dbNeighbours.emplace_back(c);
-			}
-		  }
-		}
-		if(!n.inCluster){
-		  n.inCluster = true;
-		  cluster.clusterBoids.emplace_back(n);
-		  cluster.clusterCount++;
-		}
-	  }
-	  */
-      // scanning for clusters
+	  // add the cluster
+	  clusters.emplace_back(cluster);
     }
   }
 
-  // update and find boid clusters
+  // problem is not here
+  for(auto &b : boids){
+	// unlock for another db array copy
+	// b.copyLock = false;
+	b.dbNeighbours.clear();
+  }
+
   // dbscan algo
 
   draw(prog, boidBuffer);
