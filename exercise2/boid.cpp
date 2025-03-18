@@ -86,12 +86,9 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
 
     // reducing the number of iterations, as we don't need to take the whole
     // flock
-    if (closeNeighbours.size() >= 5) {
-      isNoise = false;
+    if (closeNeighbours.size() >= 3) {
       break;
-    } else {
-      isNoise = true;
-    }
+	}
   }
 
   Vec2f ruleAcceleration = {0.f, 0.f};
@@ -223,9 +220,10 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 	  
 	  // make a new cluster
       BoidCluster cluster;
-	  cluster.clusterBoids.emplace_back(b);
-	  cluster.clusterCount++;
+	  //cluster.clusterBoids.emplace_back(b);
+	  //cluster.clusterCount++;
 
+	  /*
 	  for(auto &n : b.dbNeighbours){
 		if(!n.isVisited){
 		  n.isVisited = true;
@@ -243,6 +241,7 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 		  cluster.clusterCount++;
 		}
 	  }
+	  */
       // scanning for clusters
     }
   }
