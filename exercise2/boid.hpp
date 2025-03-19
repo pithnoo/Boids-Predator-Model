@@ -26,7 +26,6 @@ public:
   bool atBoundary = false;
 
   // for the DBScan algo
-  std::vector<Boid> dbNeighbours;
   std::vector<Boid> neighbours;
   std::vector<Boid> closeNeighbours;
 
@@ -46,6 +45,9 @@ public:
 	Vec3f(0.005f, -0.005f, 1.f),
   };
 
+  // range to recognise boids that are too close (for seperation)
+  float avoidDistance = 10.f;
+
   // initialise boid
   Boid();
 
@@ -53,21 +55,12 @@ public:
 	position = boid.position;
 	rotation = boid.rotation;
 	atBoundary = boid.atBoundary;
-	//neighbours = boid.neighbours;
-	//dbNeighbours = boid.dbNeighbours;
-	//closeNeighbours = boid.closeNeighbours;
 	acceleration = boid.acceleration;
 	velocity = boid.velocity;
 	isNoise = boid.isNoise;
 	isVisited = boid.isVisited;
 	isCore = boid.isCore;
 	inCluster = boid.inCluster;
-	dbNeighbours = boid.dbNeighbours;
-
-	for(size_t i = 0; i < boid.dbNeighbours.size(); i++){
-	  dbNeighbours[i] = boid.dbNeighbours[i];
-	}
-
 	return *this;
   }
 
@@ -78,8 +71,6 @@ private:
   // minimum distance before rotating against boundary
   float minDistance = 50.f;
 
-  // range to recognise boids that are too close (for seperation)
-  float avoidDistance = 10.f;
 
   // range to recognise other neighbouring boids (Note: also for DBscan)
   float boidRange = 50.f;
