@@ -64,7 +64,7 @@ public:
 	inCluster = boid.inCluster;
 	dbNeighbours = boid.dbNeighbours;
 
-	for(int i = 0; i < boid.dbNeighbours.size(); i++){
+	for(size_t i = 0; i < boid.dbNeighbours.size(); i++){
 	  dbNeighbours[i] = boid.dbNeighbours[i];
 	}
 
