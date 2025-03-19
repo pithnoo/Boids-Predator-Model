@@ -200,6 +200,10 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
   std::vector<BoidCluster> clusters;
 
   if (!isPaused) {
+	// global matrix to check if its been visited
+	std::vector<bool> visitMatrix;
+	visitMatrix.resize(boids.size());
+
     for (auto &b : boids) {
       // calculating transformation
       Mat33f transformation = b.update(
@@ -239,7 +243,7 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 		cluster.clusterBoids.emplace_back(b);
 		cluster.clusterCount++;
 	  }
-	  std::printf("new point!\n");
+	  // std::printf("new point!\n");
 
       size_t i = 0;
       while (i < b.dbNeighbours.size()) {
