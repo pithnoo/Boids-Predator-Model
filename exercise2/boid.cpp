@@ -54,8 +54,6 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   float dx, dy;
   float neighbourDistance;
 
-  isVisited = false;
-
   // looping over neighbours
   for (auto &b : boids) {
     // skip boid that is in exact position
@@ -70,6 +68,10 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     // pythagorus to find distance between neighbours
     neighbourDistance = std::sqrt(dx + dy);
 
+    if (neighbourDistance <= avoidDistance * 1.1f) {
+      dbNeighbours.emplace_back(b);
+    }
+
     // TODO: put an angle here for boid sight range
     if (neighbourDistance <= boidRange && b.atBoundary == false) {
       neighbours.emplace_back(b);
@@ -77,20 +79,21 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
       // if its really close, we gotta avoid it
       if (neighbourDistance <= avoidDistance) {
         closeNeighbours.emplace_back(b);
-        dbNeighbours.emplace_back(b);
       }
     }
-    // for DBScan
 
     // reducing the number of iterations, as we don't need to take the whole
     // flock
     if (closeNeighbours.size() >= 3) {
-      isCore = true;
       break;
-    } else {
-      isCore = false;
     }
   }
+
+  /*
+  if(dbNeighbours.size() >= 6)
+        std::printf("%p c: %li n: %li\n" , this, closeNeighbours.size(),
+  dbNeighbours.size());
+  */
 
   /*
   // make a deep copy of closeNeighbours
@@ -169,6 +172,8 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   neighbours.clear();
   closeNeighbours.clear();
 
+  // dbNeighbours.clear();
+
   // reset acceleration
   acceleration = {0.f, 0.f};
 
@@ -225,16 +230,21 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
       // problem: boid is never a core point?
       // is b a core point?
-      if (b.isCore == false) {
+
+	  // problem: the check for the neighbour size of b inhibits the check for n
+      if (b.dbNeighbours.size()+1 < 4) {
         b.isNoise = true;
         continue;
       }
 
+      b.isVisited = true;
+
       // make a new cluster
       BoidCluster cluster;
-	  cluster.clusterBoids.clear();
-	  cluster.clusterCount = 0;
+      cluster.clusterBoids.clear();
+      cluster.clusterCount = 0;
 
+      // add first core point to the cluster
       b.inCluster = true;
       cluster.clusterBoids.emplace_back(b);
       cluster.clusterCount++;
@@ -243,46 +253,53 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       while (i < b.dbNeighbours.size()) {
         Boid &n = b.dbNeighbours[i];
         if (!n.isVisited) {
-          n.isVisited = true;
-          std::printf("copied!, %li, %li\n", b.dbNeighbours.size(), n.dbNeighbours.size());
-          // concatenate neighbours to the current set
-          b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(),
-                                n.dbNeighbours.end());
 
-          // reset: we gotta check again as the size has now changed
-          i = 0;
-          continue;
+		  n.isVisited = true;
+
+          // is it a core point?
+          if (n.dbNeighbours.size()+1 >= 3) {
+            b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(),
+                                  n.dbNeighbours.end());
+            //std::printf("copied!, %li, %p, %li, %li\n", i, &b.dbNeighbours[i],
+            //            b.dbNeighbours.size(), n.dbNeighbours.size());
+            // reset and search again
+            i = 0;
+            continue;
+          }
+
+          // including border points and core points
+          if (!n.inCluster) {
+            n.inCluster = true;
+            cluster.clusterBoids.emplace_back(n);
+            cluster.clusterCount++;
+          }
         }
-        if (!n.inCluster) {
-          n.inCluster = true;
-          cluster.clusterBoids.emplace_back(n);
-          cluster.clusterCount++;
-        }
-        // scanning for clusters
-        b.isVisited = true;
-        
+
         // update i until it reaches the final size
         i++;
       }
 
-	  // add the cluster
-	  if (cluster.clusterCount > 0) {
-		//std::printf("added size: %i\r", cluster.clusterCount);
-		clusters.emplace_back(cluster);
-	  }
+      // add the cluster
+      if (cluster.clusterCount > 0) {
+        // std::printf("added size: %i\r", cluster.clusterCount);
+        clusters.emplace_back(cluster);
+      }
     }
   }
+  // scanning for clusters
 
   // reset values for next scan
   for (auto &b : boids) {
     b.dbNeighbours.clear();
-	b.isVisited = false;
-	b.isNoise = false;
-	b.isCore = false;
-	b.inCluster = false;
+
+    // reset until proven otherwise
+    b.isVisited = false;
+    b.isNoise = false;
+    b.isCore = false;
+    b.inCluster = false;
   }
 
-  //std::printf("Cluster count: %li\r", clusters.size());
+  std::printf("Cluster count: %li\r", clusters.size());
   clusters.clear();
 
   draw(prog, boidBuffer);

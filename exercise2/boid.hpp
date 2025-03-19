@@ -30,12 +30,11 @@ public:
   std::vector<Boid> neighbours;
   std::vector<Boid> closeNeighbours;
 
+  // set until proven otherwise
   bool isNoise = false;
   bool isVisited = false;
   bool isCore = false;
   bool inCluster = false;
-
-  bool copyLock = false;
 
   // boid initial colour
   float const boidColor[3] = { 0.f, 0.5f, 1.f };
@@ -51,15 +50,24 @@ public:
   Boid();
 
   Boid& operator=(const Boid &boid){
-	neighbours = boid.neighbours;
-	closeNeighbours = boid.closeNeighbours;
-	dbNeighbours = boid.dbNeighbours;
+	position = boid.position;
+	rotation = boid.rotation;
+	atBoundary = boid.atBoundary;
+	//neighbours = boid.neighbours;
+	//dbNeighbours = boid.dbNeighbours;
+	//closeNeighbours = boid.closeNeighbours;
 	acceleration = boid.acceleration;
 	velocity = boid.velocity;
 	isNoise = boid.isNoise;
 	isVisited = boid.isVisited;
 	isCore = boid.isCore;
 	inCluster = boid.inCluster;
+	dbNeighbours = boid.dbNeighbours;
+
+	for(int i = 0; i < boid.dbNeighbours.size(); i++){
+	  dbNeighbours[i] = boid.dbNeighbours[i];
+	}
+
 	return *this;
   }
 

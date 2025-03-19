@@ -176,11 +176,11 @@ int main() try {
 
   // boid default values
   float boidSpeed = 0.1f;
-  float seperationFactor = 0.f;
-  float alignmentFactor = 0.f;
-  float cohesionFactor = 0.f;
+  float seperationFactor = 1.5f;
+  float alignmentFactor = 0.6f;
+  float cohesionFactor = 0.1f;
   float boundaryForce = 0.05f;
-  float steeringFactor = 0.f;
+  float steeringFactor = 0.1f;
 
   // Animation state
   auto last = Clock::now();
