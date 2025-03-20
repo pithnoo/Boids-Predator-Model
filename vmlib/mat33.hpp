@@ -33,7 +33,6 @@ constexpr Mat33f kIdentity33f = { {
 	0.f, 0.f, 1.f
 } };
   
-
 // matrix with matrix
 inline Mat33f operator*(Mat33f const& aLeft, Mat33f const& aRight){
   // r is resultant matrix

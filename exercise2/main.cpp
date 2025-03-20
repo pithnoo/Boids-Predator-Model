@@ -33,6 +33,7 @@ constexpr char const *kWindowTitle = "Boids Program";
 
 struct State_ {
   ShaderProgram *prog;
+  bool isPaused = false;
 };
 
 void updateGui(float&, float&, float&, float&, float&, float&, float);
@@ -233,23 +234,6 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // update each set of boids
-	/*
-    for(auto &b : boids){
-	  b.update(
-			   boids,
-			   state.prog,
-			   dt,
-			   boidSpeed,
-			   seperationFactor,
-			   alignmentFactor,
-			   cohesionFactor,
-			   boundaryForce,
-			   steeringFactor
-			   );
-    }
-	*/
-
 	bs.update(
 			  state.prog,
 			  dt,
@@ -258,7 +242,8 @@ int main() try {
 			  alignmentFactor,
 			  cohesionFactor,
 			  boundaryForce,
-			  steeringFactor
+			  steeringFactor,
+			  state.isPaused
 			  );
 
     // render gui window
@@ -321,6 +306,7 @@ void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
     return;
   }
 
+
   if (auto *state = static_cast<State_ *>(glfwGetWindowUserPointer(aWindow))) {
     // R-key reloads shaders.
     if (GLFW_KEY_R == aKey && GLFW_PRESS == aAction) {
@@ -335,6 +321,9 @@ void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
         }
       }
     }
+	if(GLFW_KEY_P == aKey && GLFW_PRESS == aAction){
+	  state->isPaused = !state->isPaused;
+	}
   }
 }
 } // namespace

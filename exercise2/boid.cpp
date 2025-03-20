@@ -14,7 +14,7 @@ Boid::Boid() {
 Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
                     float boidSpeed, float seperationFactor,
                     float alignmentFactor, float cohesionFactor,
-                    float boundaryForce, float steeringFactor) {
+                    float boundaryForce, float steeringFactor, bool isPaused) {
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -67,8 +67,8 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     neighbourDistance = std::sqrt(dx + dy);
 
     if (neighbourDistance <= avoidDistance * 1.5f) {
-	  // std::printf("added id: %i", b.id);
-	  boidIDs.push_back(b.id);
+      // std::printf("added id: %i", b.id);
+      boidIDs.push_back(b.id);
     }
 
     // TODO: put an angle here for boid sight range
@@ -143,12 +143,13 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   // normalize velocity to ensure that it does not exceed the boid speed limit
   velocity = normalize(velocity) * boidSpeed;
 
-  // note: add delta time to this
-  position.x += velocity.x * dt;
-  position.y += velocity.y * dt;
-
-  // the rotation of the boid can be calcualted by the current acceleration
-  rotation = std::atan2(velocity.y, velocity.x) - (M_PI / 2.0f);
+  // only change when not paused
+  if (!isPaused) {
+    position.x += velocity.x * dt;
+    position.y += velocity.y * dt;
+    // the rotation of the boid can be calcualted by the current acceleration
+    rotation = std::atan2(velocity.y, velocity.x) - (M_PI / 2.0f);
+  }
 
   // we can clear current neighbours once we calculate resultant acceleration
   neighbours.clear();
@@ -171,11 +172,11 @@ BoidSystem::BoidSystem(int N) : boids(N) {
   // assign an ID to identify each boid
   int boidID = 0;
 
-  for(auto &b : boids){
-	b.id = boidID;
-	boidID++;
+  for (auto &b : boids) {
+    b.id = boidID;
+    boidID++;
   }
-  
+
   // there will only be one instance of this, as all boids will be using the
   // same shape
   glGenBuffers(1, &posVBO);
@@ -193,25 +194,25 @@ BoidSystem::BoidSystem(int N) : boids(N) {
 void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
                         float seperationFactor, float alignmentFactor,
                         float cohesionFactor, float boundaryForce,
-                        float steeringFactor) {
+                        float steeringFactor, bool isPaused) {
 
   std::vector<Vec3f> boidBuffer;
-  // std::vector<BoidCluster> clusters;
 
   int c = 0;
-  if (!isPaused) {
-    for (auto &b : boids) {
-      // calculating transformation
-      Mat33f transformation = b.update(
-          boids, prog, dt, boidSpeed, seperationFactor, alignmentFactor,
-          cohesionFactor, boundaryForce, steeringFactor);
+  for (auto &b : boids) {
+    // calculating transformation
+    Mat33f transformation =
+        b.update(boids, prog, dt, boidSpeed, seperationFactor, alignmentFactor,
+                 cohesionFactor, boundaryForce, steeringFactor, isPaused);
 
-      for (auto &v : b.boidPositions) {
-        Vec3f newPos = transformation * v;
-        boidBuffer.emplace_back(newPos);
-      }
-      // calculating transformation
+    // 3 vertex points to be added to VBO
+    for (auto &v : b.boidPositions) {
+      Vec3f newPos = transformation * v;
+      boidBuffer.emplace_back(newPos);
+    }
+    // calculating transformation
 
+    if (!isPaused) {
       // scanning for clusters
       // has the boid been labelled / visited?
       if (b.isVisited)
@@ -219,7 +220,7 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
       // is b a core point?
       if (b.boidIDs.size() < 3) {
-		// noise point, not border or core point
+        // noise point, not border or core point
         continue;
       }
 
@@ -227,40 +228,44 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
       // make a new cluster
       BoidCluster cluster;
-	  cluster.clusterCount = 0;
-	  cluster.clusterBoids.clear();
+      cluster.clusterCount = 0;
+      cluster.clusterBoids.clear();
 
       // add first core point to the cluster
-	  if(!b.inCluster){
-		b.inCluster = true;
-		cluster.clusterBoids.emplace_back(b);
-		cluster.clusterCount++;
-	  }
+      if (!b.inCluster) {
+        b.inCluster = true;
+        cluster.clusterBoids.emplace_back(b);
+        cluster.clusterCount++;
+      }
 
-	  std::printf("origin: %i\n", b.id);
-	  size_t i = 0;
-	  while(i < b.boidIDs.size()){
-		int id = b.boidIDs[i];
-		i++;
-		c++;
+      std::printf("origin: %i\n", b.id);
+      size_t i = 0;
+      while (i < b.boidIDs.size()) {
+        int id = b.boidIDs[i];
+        i++;
+        c++;
 
-		if(boids[id].isVisited) continue;
-		boids[id].isVisited = true;
+        if (boids[id].isVisited)
+          continue;
+        boids[id].isVisited = true;
 
-		// core point
-		if(boids[id].boidIDs.size() >= 3){
-		  b.boidIDs.insert(b.boidIDs.end(), boids[id].boidIDs.begin(), boids[id].boidIDs.end());
-		  std::printf("origin chain: %i, current size: %li\n", boids[id].id, b.boidIDs.size());
-		}
-		// else, this will be a border point
+        // core point
+        if (boids[id].boidIDs.size() >= 3) {
+          b.boidIDs.insert(b.boidIDs.end(), boids[id].boidIDs.begin(),
+                           boids[id].boidIDs.end());
+          std::printf("origin chain: %i, current size: %li\n", boids[id].id,
+                      b.boidIDs.size());
+        }
+        // else, this will be a border point
 
-		if(!boids[id].inCluster){
-		  std::printf("adding %i, visited: %d, neighbours: %li\n", id, boids[id].isVisited, boids[id].boidIDs.size());
-		  boids[id].inCluster = true;
-		  cluster.clusterBoids.emplace_back(boids[id]);
-		  cluster.clusterCount++;
-		}
-	  }
+        if (!boids[id].inCluster) {
+          std::printf("adding %i, visited: %d, neighbours: %li\n", id,
+                      boids[id].isVisited, boids[id].boidIDs.size());
+          boids[id].inCluster = true;
+          cluster.clusterBoids.emplace_back(boids[id]);
+          cluster.clusterCount++;
+        }
+      }
 
       // add the cluster
       if (cluster.clusterCount > 0) {
@@ -271,21 +276,21 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
   }
   // scanning for clusters
 
-  // reset values for next scan
-  for (auto &b : boids) {
-	b.boidIDs.clear();
+  if (!isPaused) {
+    // reset values for next scan
+    for (auto &b : boids) {
+      b.boidIDs.clear();
+      // reset until proven otherwise
+      b.isVisited = false;
+      b.isNoise = false;
+      b.inCluster = false;
+      b.isCore = false;
+    }
 
-    // reset until proven otherwise
-    b.isVisited = false;
-    b.isNoise = false;
-    b.inCluster = false;
-    b.isCore = false;
+    std::printf("values reset! Total counts: %i\n", c);
+    // std::printf("Cluster count: %li\r", clusters.size());
+    clusters.clear();
   }
-  std::printf("values reset! Total counts: %i\n", c);
-  // std::printf("Cluster count: %li\r", clusters.size());
-
-  clusters.clear();
-
   draw(prog, boidBuffer);
 }
 

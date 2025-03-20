@@ -72,7 +72,7 @@ public:
 	return *this;
   }
 
-  Mat33f update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
+  Mat33f update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor, bool isPaused);
 
 private:
 
@@ -108,12 +108,9 @@ public:
   // for the predator to identify
   std::vector<BoidCluster> clusters;
 
-  // enable pausing the boids system currently
-  bool isPaused;
-
   BoidSystem(int N);
 
-  void update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor);
+  void update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor, bool isPaused);
 
   void draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer);
   
