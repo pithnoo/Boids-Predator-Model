@@ -286,9 +286,11 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       // add the cluster
       if (cluster.clusterCount > 0) {
         clusters.emplace_back(cluster);
+		/*
 		std::printf("----------------------------------------------\n");
 		std::printf("clusters: %li, cluster size: %i\n", clusters.size(), cluster.clusterCount);
 		std::printf("----------------------------------------------\n");
+		*/
       }
     }
   }
@@ -296,6 +298,9 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
   if (!isPaused) {
     // reset values for next scan
+    std::printf("values reset! Total counts: %i, Final Size: %li\n", c, clusters.size());
+    clusters.clear();
+
 	for(size_t i = 0; i < boids.size(); i++){
       // reset until proven otherwise
 	  boids[i].isVisited = false;
@@ -305,9 +310,6 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
 	  // boid ids will be cleared on the next update
 	}
-
-    // std::printf("values reset! Total counts: %i, Final Size: %li\r", c, clusters.size());
-    clusters.clear();
   }
   draw(prog, boidBuffer);
 }
