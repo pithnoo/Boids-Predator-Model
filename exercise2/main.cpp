@@ -173,7 +173,7 @@ int main() try {
 
   state.prog = &prog;
 
-  BoidSystem bs(50);
+  BoidSystem bs(100);
 
   // boid default values
   float boidSpeed = 0.1f;
