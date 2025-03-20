@@ -17,7 +17,7 @@
 class Boid {
 public:
   // allowing identification of each boid, this will be assigned from BoidSystem
-  int id;
+  int id = 0;
 
   // central position of the boid
   Vec2f position = {0.f, 0.f};
@@ -29,7 +29,8 @@ public:
   bool atBoundary = false;
 
   // for the DBScan algo
-  std::vector<Boid> dbNeighbours;
+  std::vector<int> boidIDs;
+
   std::vector<Boid> neighbours;
   std::vector<Boid> closeNeighbours;
 
@@ -53,23 +54,20 @@ public:
   Boid();
 
   Boid& operator=(const Boid &boid){
+	// boid properties
 	position = boid.position;
 	rotation = boid.rotation;
 	atBoundary = boid.atBoundary;
-	//neighbours = boid.neighbours;
-	//dbNeighbours = boid.dbNeighbours;
-	//closeNeighbours = boid.closeNeighbours;
 	acceleration = boid.acceleration;
 	velocity = boid.velocity;
+
+	// DBscan properties
+	boidIDs = boid.boidIDs;
 	isNoise = boid.isNoise;
 	isVisited = boid.isVisited;
+	isVisited = true;
 	isCore = boid.isCore;
 	inCluster = boid.inCluster;
-	dbNeighbours = boid.dbNeighbours;
-
-	for(size_t i = 0; i < boid.dbNeighbours.size(); i++){
-	  dbNeighbours[i] = boid.dbNeighbours[i];
-	}
 
 	return *this;
   }

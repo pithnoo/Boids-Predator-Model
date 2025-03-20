@@ -48,8 +48,6 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   }
 
   // for seperation rule and DBscan
-  // std::vector<Boid> neighbours;
-  // std::vector<Boid> closeNeighbours;
 
   float dx, dy;
   float neighbourDistance;
@@ -68,8 +66,9 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     // pythagorus to find distance between neighbours
     neighbourDistance = std::sqrt(dx + dy);
 
-    if (neighbourDistance <= avoidDistance * 1.1f) {
-      dbNeighbours.emplace_back(b);
+    if (neighbourDistance <= avoidDistance * 1.5f) {
+	  // std::printf("added id: %i", b.id);
+	  boidIDs.push_back(b.id);
     }
 
     // TODO: put an angle here for boid sight range
@@ -88,12 +87,6 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
       break;
     }
   }
-
-  /*
-  if(dbNeighbours.size() >= 6)
-        std::printf("%p c: %li n: %li\n" , this, closeNeighbours.size(),
-  dbNeighbours.size());
-  */
 
   Vec2f ruleAcceleration = {0.f, 0.f};
 
@@ -161,8 +154,6 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   neighbours.clear();
   closeNeighbours.clear();
 
-  // dbNeighbours.clear();
-
   // reset acceleration
   acceleration = {0.f, 0.f};
 
@@ -177,7 +168,9 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
 }
 
 BoidSystem::BoidSystem(int N) : boids(N) {
+  // assign an ID to identify each boid
   int boidID = 0;
+
   for(auto &b : boids){
 	b.id = boidID;
 	boidID++;
@@ -203,14 +196,10 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
                         float steeringFactor) {
 
   std::vector<Vec3f> boidBuffer;
-  std::vector<BoidCluster> clusters;
+  // std::vector<BoidCluster> clusters;
 
+  int c = 0;
   if (!isPaused) {
-
-	// global matrix to check if its been visited
-	std::vector<bool> visitMatrix;
-	visitMatrix.resize(boids.size());
-
     for (auto &b : boids) {
       // calculating transformation
       Mat33f transformation = b.update(
@@ -228,12 +217,9 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       if (b.isVisited)
         continue;
 
-      // problem: boid is never a core point?
       // is b a core point?
-
-	  // problem: the check for the neighbour size of b inhibits the check for n
-      if (b.dbNeighbours.size() < 4) {
-        b.isNoise = true;
+      if (b.boidIDs.size() < 3) {
+		// noise point, not border or core point
         continue;
       }
 
@@ -241,8 +227,8 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
       // make a new cluster
       BoidCluster cluster;
-      cluster.clusterBoids.clear();
-      cluster.clusterCount = 0;
+	  cluster.clusterCount = 0;
+	  cluster.clusterBoids.clear();
 
       // add first core point to the cluster
 	  if(!b.inCluster){
@@ -250,47 +236,35 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 		cluster.clusterBoids.emplace_back(b);
 		cluster.clusterCount++;
 	  }
-	  // std::printf("new point!\n");
 
-      size_t i = 0;
-      while (i < b.dbNeighbours.size()) {
-        Boid &n = b.dbNeighbours[i];
+	  std::printf("origin: %i\n", b.id);
+	  size_t i = 0;
+	  while(i < b.boidIDs.size()){
+		int id = b.boidIDs[i];
+		i++;
+		c++;
 
-        if (!n.isVisited) {
-          // is it a core point?
-          if (n.dbNeighbours.size() >= 3) {
-            b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(),
-                                  n.dbNeighbours.end());
-			
-            // std::printf("copied!, %li, %p, %li, %li, visited: %d\n", i, &b.dbNeighbours[i],
-			//b.dbNeighbours.size(), n.dbNeighbours.size(), n.isVisited);
+		if(boids[id].isVisited) continue;
+		boids[id].isVisited = true;
 
-			std::printf("copied id: %i from origin %i\n", n.id, b.id);
+		// core point
+		if(boids[id].boidIDs.size() >= 3){
+		  b.boidIDs.insert(b.boidIDs.end(), boids[id].boidIDs.begin(), boids[id].boidIDs.end());
+		  std::printf("origin chain: %i, current size: %li\n", boids[id].id, b.boidIDs.size());
+		}
+		// else, this will be a border point
 
-			n.isVisited = true;
-
-            // reset and search again
-            i=0;
-            continue;
-          }
-
-          // including border points and core points
-          if (!n.inCluster) {
-            n.inCluster = true;
-            cluster.clusterBoids.emplace_back(n);
-            cluster.clusterCount++;
-          }
-        }
-
-		n.isVisited = true;
-
-        // update i until it reaches the final size
-        i++;
-      }
+		if(!boids[id].inCluster){
+		  std::printf("adding %i, visited: %d, neighbours: %li\n", id, boids[id].isVisited, boids[id].boidIDs.size());
+		  boids[id].inCluster = true;
+		  cluster.clusterBoids.emplace_back(boids[id]);
+		  cluster.clusterCount++;
+		}
+	  }
 
       // add the cluster
       if (cluster.clusterCount > 0) {
-        // std::printf("added size: %i\r", cluster.clusterCount);
+        // std::printf("added cluster size: %i\n", cluster.clusterCount);
         clusters.push_back(cluster);
       }
     }
@@ -299,16 +273,17 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
   // reset values for next scan
   for (auto &b : boids) {
-    b.dbNeighbours.clear();
+	b.boidIDs.clear();
 
     // reset until proven otherwise
     b.isVisited = false;
     b.isNoise = false;
-    b.isCore = false;
     b.inCluster = false;
+    b.isCore = false;
   }
-
+  std::printf("values reset! Total counts: %i\n", c);
   // std::printf("Cluster count: %li\r", clusters.size());
+
   clusters.clear();
 
   draw(prog, boidBuffer);
