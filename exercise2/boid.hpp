@@ -31,9 +31,6 @@ public:
   // for the DBScan algo
   std::vector<int> boidIDs;
 
-  std::vector<Boid> neighbours;
-  std::vector<Boid> closeNeighbours;
-
   // set until proven otherwise
   bool isNoise = false;
   bool isVisited = false;
@@ -75,6 +72,10 @@ public:
   Mat33f update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor, bool isPaused);
 
 private:
+  std::vector<Boid> neighbours;
+  std::vector<Boid> closeNeighbours;
+
+  float visionAngle = (3 * M_PI) / 2;
 
   // minimum distance before rotating against boundary
   float minDistance = 50.f;

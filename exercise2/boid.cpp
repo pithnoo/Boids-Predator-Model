@@ -67,12 +67,17 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     // pythagorus to find distance between neighbours
     neighbourDistance = std::sqrt(dx + dy);
 
+	Vec2f dv = normalize(Vec2f{dx,dy});
+	Vec2f dir = normalize(velocity);
+
+	float da = dot(dv, dir) / (length(dv) * length(dir));
+
     if (neighbourDistance <= dbDistance) {
       boidIDs.emplace_back(b.id);
     }
 
     // TODO: put an angle here for boid sight range
-    if (neighbourDistance <= boidRange && b.atBoundary == false) {
+    if (neighbourDistance <= boidRange && b.atBoundary == false && da <= visionAngle) {
       neighbours.emplace_back(b);
 
       // if its really close, we gotta avoid it
@@ -304,7 +309,6 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 	  boids[i].isNoise = false;
 	  boids[i].inCluster = false;
 	  boids[i].isCore = false;
-
 	  // boid ids will be cleared on the next update
 	}
 
