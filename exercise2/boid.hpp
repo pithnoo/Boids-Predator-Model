@@ -16,6 +16,9 @@
 
 class Boid {
 public:
+  // allowing identification of each boid, this will be assigned from BoidSystem
+  int id;
+
   // central position of the boid
   Vec2f position = {0.f, 0.f};
 

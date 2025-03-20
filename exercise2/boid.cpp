@@ -177,6 +177,12 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
 }
 
 BoidSystem::BoidSystem(int N) : boids(N) {
+  int boidID = 0;
+  for(auto &b : boids){
+	b.id = boidID;
+	boidID++;
+  }
+  
   // there will only be one instance of this, as all boids will be using the
   // same shape
   glGenBuffers(1, &posVBO);
@@ -200,6 +206,7 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
   std::vector<BoidCluster> clusters;
 
   if (!isPaused) {
+
 	// global matrix to check if its been visited
 	std::vector<bool> visitMatrix;
 	visitMatrix.resize(boids.size());
@@ -255,8 +262,10 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
             b.dbNeighbours.insert(b.dbNeighbours.end(), n.dbNeighbours.begin(),
                                   n.dbNeighbours.end());
 			
-            std::printf("copied!, %li, %p, %li, %li, visited: %d\n", i, &b.dbNeighbours[i],
-                        b.dbNeighbours.size(), n.dbNeighbours.size(), n.isVisited);
+            // std::printf("copied!, %li, %p, %li, %li, visited: %d\n", i, &b.dbNeighbours[i],
+			//b.dbNeighbours.size(), n.dbNeighbours.size(), n.isVisited);
+
+			std::printf("copied id: %i from origin %i\n", n.id, b.id);
 
 			n.isVisited = true;
 
