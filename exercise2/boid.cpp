@@ -52,6 +52,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   float dx, dy;
   float neighbourDistance;
 
+  boidIDs.clear();
   // looping over neighbours
   for (auto &b : boids) {
     // skip boid that is in exact position
@@ -66,9 +67,12 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     // pythagorus to find distance between neighbours
     neighbourDistance = std::sqrt(dx + dy);
 
-    if (neighbourDistance <= avoidDistance * 1.5f) {
-      // std::printf("added id: %i", b.id);
-      boidIDs.push_back(b.id);
+    if (neighbourDistance <= dbDistance) {
+	  /*
+	  if(!isPaused)
+		std::printf("added id: %i to %i\n", b.id, id);
+	  */
+      boidIDs.emplace_back(b.id);
     }
 
     // TODO: put an angle here for boid sight range
@@ -83,7 +87,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
 
     // reducing the number of iterations, as we don't need to take the whole
     // flock
-    if (closeNeighbours.size() >= 3) {
+    if (closeNeighbours.size() >= 10) {
       break;
     }
   }
@@ -221,6 +225,7 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       // is b a core point?
       if (b.boidIDs.size() < 3) {
         // noise point, not border or core point
+		//printf("noise point %i, neighbours: %li\n", b.id, b.boidIDs.size());
         continue;
       }
 
@@ -238,25 +243,34 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
         cluster.clusterCount++;
       }
 
-      std::printf("origin: %i\n", b.id);
+      std::printf("origin %i: ", b.id);
+	  for(int n : b.boidIDs){
+		std::printf("%i, ", n);
+	  }
+	  std::printf("\n");
+
       size_t i = 0;
       while (i < b.boidIDs.size()) {
         int id = b.boidIDs[i];
         i++;
         c++;
 
-        if (boids[id].isVisited)
+        if (boids[id].isVisited){
+		  std::printf("skipping %i, visited: %d\n", id, boids[id].isVisited);
           continue;
+		}
+
         boids[id].isVisited = true;
 
         // core point
-        if (boids[id].boidIDs.size() >= 3) {
+        if (boids[id].boidIDs.size() >= 2) {
+		  // add neighbour points to the current search array
           b.boidIDs.insert(b.boidIDs.end(), boids[id].boidIDs.begin(),
                            boids[id].boidIDs.end());
-          std::printf("origin chain: %i, current size: %li\n", boids[id].id,
-                      b.boidIDs.size());
+          std::printf("origin chain: %i, current size: %li, neighbour size: %li\n", boids[id].id,
+                      b.boidIDs.size(), boids[id].boidIDs.size());
         }
-        // else, this will be a border point
+        // else, this will be a border point (we can add this later)
 
         if (!boids[id].inCluster) {
           std::printf("adding %i, visited: %d, neighbours: %li\n", id,
@@ -269,8 +283,10 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
       // add the cluster
       if (cluster.clusterCount > 0) {
-        // std::printf("added cluster size: %i\n", cluster.clusterCount);
         clusters.push_back(cluster);
+		std::printf("----------------------------------------------\n");
+		std::printf("clusters: %li, cluster size: %i\n", clusters.size(), cluster.clusterCount);
+		std::printf("----------------------------------------------\n");
       }
     }
   }
@@ -278,17 +294,16 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
   if (!isPaused) {
     // reset values for next scan
-    for (auto &b : boids) {
-      b.boidIDs.clear();
+	for(size_t i = 0; i < boids.size(); i++){
+	  // boids[i].boidIDs.clear();
       // reset until proven otherwise
-      b.isVisited = false;
-      b.isNoise = false;
-      b.inCluster = false;
-      b.isCore = false;
-    }
+	  boids[i].isVisited = false;
+	  boids[i].isNoise = false;
+	  boids[i].inCluster = false;
+	  boids[i].isCore = false;
+	}
 
     std::printf("values reset! Total counts: %i\n", c);
-    // std::printf("Cluster count: %li\r", clusters.size());
     clusters.clear();
   }
   draw(prog, boidBuffer);

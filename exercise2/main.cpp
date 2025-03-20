@@ -173,13 +173,13 @@ int main() try {
 
   state.prog = &prog;
 
-  BoidSystem bs(100);
+  BoidSystem bs(50);
 
   // boid default values
   float boidSpeed = 0.1f;
   float seperationFactor = 1.5f;
   float alignmentFactor = 0.6f;
-  float cohesionFactor = 0.1f;
+  float cohesionFactor = 0.3f;
   float boundaryForce = 0.05f;
   float steeringFactor = 0.1f;
 

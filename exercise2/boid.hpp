@@ -82,6 +82,9 @@ private:
   // range to recognise boids that are too close (for seperation)
   float avoidDistance = 10.f;
 
+  // distance to recognise neighbours (for DBscan)
+  float dbDistance = 14.f;
+
   // range to recognise other neighbouring boids (Note: also for DBscan)
   float boidRange = 50.f;
 
