@@ -61,23 +61,23 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
 
     // calculating the square of x and y
     // TODO: change accordingly depending on the surface height
-    dx = std::pow((position.x - b.position.x) * 640.f, 2);
-    dy = std::pow((position.y - b.position.y) * 360.f, 2);
+    dx = (position.x - b.position.x) * 640.f;
+    dy = (position.y - b.position.y) * 360.f;
 
     // pythagorus to find distance between neighbours
-    neighbourDistance = std::sqrt(dx + dy);
+    neighbourDistance = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
 
-	Vec2f dv = normalize(Vec2f{dx,dy});
-	Vec2f dir = normalize(velocity);
-
-	float da = dot(dv, dir) / (length(dv) * length(dir));
-
+	// ignores vision angle
     if (neighbourDistance <= dbDistance) {
       boidIDs.emplace_back(b.id);
     }
+	
+	// finding boid vision angle
+	Vec2f dv = Vec2f{dx, dy};
+	float da = dot(dv, velocity) / (neighbourDistance * length(velocity));
 
     // TODO: put an angle here for boid sight range
-    if (neighbourDistance <= boidRange && b.atBoundary == false && da <= visionAngle) {
+    if (neighbourDistance <= boidRange && acos(da) < visionAngle) {
       neighbours.emplace_back(b);
 
       // if its really close, we gotta avoid it
@@ -244,14 +244,6 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
         cluster.clusterCount++;
       }
 
-	  /*
-      std::printf("origin %i: ", b.id);
-	  for(int n : b.boidIDs){
-		std::printf("%i, ", n);
-	  }
-	  std::printf("\n");
-	  */
-
       size_t i = 0;
       while (i < b.boidIDs.size()) {
         int id = b.boidIDs[i];
@@ -275,7 +267,11 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
                       b.boidIDs.size(), boids[id].boidIDs.size());
 		  */
         }
-        // else, this will be a border point (we can add this later)
+		else{
+		  // otherwise, this is a border point
+		  // this should be known to search edge boids and boids in the cluster
+		  cluster.edgeBoids.emplace_back(boids[id]);
+		}
 
         if (!boids[id].inCluster) {
 		  /*
@@ -313,6 +309,8 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 	}
 
     std::printf("values reset! Total counts: %i, Final Size: %li\n", c, clusters.size());
+
+	// this later will only be cleaned by the predator
     clusters.clear();
   }
   draw(prog, boidBuffer);

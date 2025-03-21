@@ -75,7 +75,9 @@ private:
   std::vector<Boid> neighbours;
   std::vector<Boid> closeNeighbours;
 
-  float visionAngle = (3 * M_PI) / 2;
+  float visionAngle = (5*M_PI) / 6;
+
+  // float visionAngle = 0.f;
 
   // minimum distance before rotating against boundary
   float minDistance = 50.f;
@@ -99,8 +101,17 @@ public:
   // boids at the edge for a primary target
   std::vector<Boid> edgeBoids;
   std::vector<Boid> clusterBoids;
+
+  // return average centroid of boids
+  Vec2f returnCenter();
+
+  // return average velocity of boids
+  Vec2f returnVelocity();
+
   Vec2f clusterCentroid;
   Vec2f clusterVelocity;
+
+  // this is decided during db scan
   int clusterCount;
 };
 
