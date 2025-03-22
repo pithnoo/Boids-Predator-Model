@@ -9,6 +9,9 @@
 
 class Predator{
 public:
+  Vec2f position = { 0.f, 0.f };
+  Vec2f velocity = { 0.f, 0.f };
+
   // minimum distance to maintain before attack
   float scoutDistance;
 
