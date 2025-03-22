@@ -180,6 +180,7 @@ int main() try {
   // boid default values
   float boidSpeed = 0.1f;
   float predSpeed = 0.08f;
+  float diveSpeed = 1.2f;
   float seperationFactor = 1.5f;
   float alignmentFactor = 0.6f;
   float cohesionFactor = 0.3f;
@@ -253,7 +254,9 @@ int main() try {
 			 bs,
 			 dt,
 			 predSpeed,
-			 boundaryForce
+			 diveSpeed,
+			 boundaryForce,
+			 state.isPaused
 			 );
 
     // render gui window

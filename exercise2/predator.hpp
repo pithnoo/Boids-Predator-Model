@@ -19,7 +19,8 @@ public:
   float idleTime = 3.f;
 
   // time to dive towards desired position
-  float diveTime = .2f;
+  float diveTime = 0.6f;
+  bool hasDived = false;
 
   enum state : int {
 	IDLE,
@@ -33,14 +34,14 @@ public:
   // initialise with knowledge of boid system
   Predator(ShaderProgram *prog);
 
-  void update(BoidSystem bs, float dt, float predSpeed, float boundaryForce);
+  void update(BoidSystem bs, float dt, float predSpeed, float diveSpeed, float boundaryForce, bool isPaused);
 
   void draw(std::vector<Vec3f> predBuffer);
 
   std::vector<Vec3f> predPositions = {
-	Vec3f(0.f, 0.01f, 1.f),
-	Vec3f(-0.005f, -0.005f, 1.f),
-	Vec3f(0.005f, -0.005f, 1.f),
+	Vec3f(0.f, 0.015f, 1.f),
+	Vec3f(-0.006f, -0.006f, 1.f),
+	Vec3f(0.006f, -0.006f, 1.f),
   };
 
   float const predColor[3] = { 1.f, 0.f, 0.f };
@@ -52,6 +53,10 @@ private:
   // easier for me to have a seperate draw call for predators, which hunt roughly at pairs max
   GLuint posVBO;
   GLuint vao;
+
+  // minimum distance before rotating against boundary
+  float minDistance = 50.f;
+  float boundaryForce = 0.5f;
 
   BoidCluster largestCluster;
 
