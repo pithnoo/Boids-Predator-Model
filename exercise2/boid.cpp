@@ -173,6 +173,30 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   return boidTransform;
 }
 
+Vec2f BoidCluster::averageCenter(){
+  Vec2f clusterCenter = {0.f, 0.f};
+
+  for(auto &b : clusterBoids){
+	clusterCenter += b.position;
+  }
+
+  clusterCenter /= clusterBoids.size();
+
+  return clusterCenter;
+}
+
+Vec2f BoidCluster::averageVelocity(){
+  Vec2f clusterVelocity = {0.f, 0.f};
+
+  for(auto &b : clusterBoids){
+	clusterVelocity += b.velocity;
+  }
+
+  clusterVelocity /= clusterBoids.size();
+
+  return clusterVelocity;
+}
+
 BoidSystem::BoidSystem(int N) : boids(N) {
   // assign an ID to identify each boid
   int boidID = 0;
@@ -204,6 +228,10 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
   std::vector<Vec3f> boidBuffer;
 
   int c = 0;
+
+  if(!isPaused)
+	clusters.clear();
+
   for (auto &b : boids) {
     // calculating transformation
     Mat33f transformation =
@@ -310,13 +338,15 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
     // std::printf("values reset! Total counts: %i, Final Size: %li\n", c, clusters.size());
 	// this later will only be cleaned by the predator
-    clusters.clear();
   }
+
   draw(prog, boidBuffer);
 }
 
 void BoidSystem::draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer) {
   glUseProgram(prog->programId());
+
+  glUniform3f(1, boidColor[0], boidColor[1], boidColor[2]);
 
   // posVBO
   glBindBuffer(GL_ARRAY_BUFFER, posVBO);
@@ -331,4 +361,19 @@ void BoidSystem::draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer) {
   glDrawArrays(GL_TRIANGLES, 0, boidBuffer.size());
   glBindVertexArray(0);
   boidBuffer.clear();
+}
+
+BoidCluster BoidSystem::highestCluster(){
+  BoidCluster maxCluster;
+  int currentMax = 0;
+
+  // note that this may be cleared
+  for(auto &c : clusters){
+	if(c.clusterCount > currentMax){
+	  currentMax = c.clusterCount;
+	  maxCluster = c;
+	}
+  }
+
+  return maxCluster;
 }

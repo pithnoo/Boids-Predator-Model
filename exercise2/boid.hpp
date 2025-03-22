@@ -2,9 +2,9 @@
 #define BOIDS_HPP
 
 #include <glad/glad.h>
+#include <GL/glext.h>
 
 #include <vector>
-#include <GL/glext.h>
 #include <iostream>
 #include <math.h>
 #include <cmath>
@@ -21,6 +21,9 @@ public:
 
   // central position of the boid
   Vec2f position = {0.f, 0.f};
+
+  // current velocity of boid
+  Vec2f velocity = { 0.f, 0.f };
 
   // what direction the boid is pointing at
   float rotation = 0;
@@ -57,12 +60,10 @@ public:
 	atBoundary = boid.atBoundary;
 	acceleration = boid.acceleration;
 	velocity = boid.velocity;
-
 	// DBscan properties
 	boidIDs = boid.boidIDs;
 	isNoise = boid.isNoise;
 	isVisited = boid.isVisited;
-	isVisited = true;
 	isCore = boid.isCore;
 	inCluster = boid.inCluster;
 
@@ -93,7 +94,6 @@ private:
 
   // the boid's acceleration, which will change depending on bounds
   Vec2f acceleration = { 0.f, 0.f };
-  Vec2f velocity = { 0.f, 0.f };
 };
 
 class BoidCluster {
@@ -103,10 +103,10 @@ public:
   std::vector<Boid> clusterBoids;
 
   // return average centroid of boids
-  Vec2f returnCenter();
+  Vec2f averageCenter();
 
   // return average velocity of boids
-  Vec2f returnVelocity();
+  Vec2f averageVelocity();
 
   Vec2f clusterCentroid;
   Vec2f clusterVelocity;
@@ -126,6 +126,8 @@ public:
   BoidSystem(int N);
 
   void update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor, bool isPaused);
+
+  BoidCluster highestCluster();
 
   void draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer);
   

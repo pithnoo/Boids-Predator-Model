@@ -27,6 +27,7 @@
 #include "../vmlib/vec2.hpp"
 
 #include "boid.hpp"
+#include "predator.hpp"
 
 namespace {
 constexpr char const *kWindowTitle = "Boids Program";
@@ -174,9 +175,11 @@ int main() try {
   state.prog = &prog;
 
   BoidSystem bs(100);
+  Predator p(state.prog);
 
   // boid default values
   float boidSpeed = 0.1f;
+  float predSpeed = 0.08f;
   float seperationFactor = 1.5f;
   float alignmentFactor = 0.6f;
   float cohesionFactor = 0.3f;
@@ -245,6 +248,13 @@ int main() try {
 			  steeringFactor,
 			  state.isPaused
 			  );
+
+	p.update(
+			 bs,
+			 dt,
+			 predSpeed,
+			 boundaryForce
+			 );
 
     // render gui window
     ImGui::Render();
