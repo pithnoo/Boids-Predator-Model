@@ -178,14 +178,14 @@ int main() try {
   Predator p(state.prog);
 
   // boid default values
-  float boidSpeed = 0.1f;
+  float boidSpeed = 0.25f;
   float predSpeed = 0.1f;
   float diveSpeed = boidSpeed;
   float predatorFactor = 1.f;
-  float seperationFactor = 1.5f;
-  float alignmentFactor = 0.6f;
-  float cohesionFactor = 0.3f;
-  float boundaryForce = 0.05f;
+  float seperationFactor = 1.9f;
+  float alignmentFactor = 0.7f;
+  float cohesionFactor = 0.4f;
+  float boundaryForce = 0.15f;
   float steeringFactor = 0.1f;
 
   // Animation state
