@@ -18,8 +18,15 @@ public:
   // time between attacks
   float idleTime = 3.f;
 
+  // time to switch between flocks
+  float switchTime = 1.f;
+  float switchElapsed = switchTime;
+
+  float diveAccel = 0.1f;
+  float maxSpeed = 0.8f;
+
   // time to dive towards desired position
-  float diveTime = 0.6f;
+  float diveTime = 0.5f;
   bool hasDived = false;
 
   enum state : int {
@@ -62,7 +69,7 @@ private:
 
   state idleState();
   state marginState();
-  state centerState();
+  state centerState(float predSpeed);
 
   void changeState(state newState);
 

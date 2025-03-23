@@ -1,13 +1,12 @@
 ../_build_/debug-x64-gcc/x64/debug/exercise2/boid.o: boid.cpp boid.hpp \
  ../third_party/glad/include/glad/glad.h \
- ../third_party/glad/include/KHR/khrplatform.h ../vmlib/vec2.hpp \
- ../vmlib/mat33.hpp ../vmlib/vec3.hpp ../vmlib/vec2.hpp \
- ../support/program.hpp
+ ../third_party/glad/include/KHR/khrplatform.h ../support/program.hpp \
+ ../vmlib/mat33.hpp ../vmlib/vec3.hpp ../vmlib/vec2.hpp ../vmlib/vec2.hpp
 boid.hpp:
 ../third_party/glad/include/glad/glad.h:
 ../third_party/glad/include/KHR/khrplatform.h:
-../vmlib/vec2.hpp:
+../support/program.hpp:
 ../vmlib/mat33.hpp:
 ../vmlib/vec3.hpp:
 ../vmlib/vec2.hpp:
-../support/program.hpp:
+../vmlib/vec2.hpp:

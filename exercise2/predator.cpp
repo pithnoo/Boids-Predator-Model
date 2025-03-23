@@ -19,14 +19,14 @@ Predator::Predator(ShaderProgram *prog) {
 
 void Predator::update(BoidSystem bs, float dt, float predSpeed, float diveSpeed,
                       float boundaryForce, bool isPaused) {
-
-  // TODO: switch the target cluster only after a specified amount of time
-  // (clusters probably need an id for this) find the largest cluster for boid
-  // to target
-  largestCluster = bs.highestCluster();
-
-  // update time taken
+  // update time taken (for states)
   timeElapsed += dt;
+
+  switchElapsed += dt;
+  if(switchElapsed >= switchTime){
+	largestCluster = bs.highestCluster();
+	switchElapsed = 0.f;
+  }
 
   float dRight = 1.f - position.x;
   float dLeft = std::abs(-1.f - position.x);
@@ -62,16 +62,26 @@ void Predator::update(BoidSystem bs, float dt, float predSpeed, float diveSpeed,
     predState = marginState();
     break;
   case CENTER:
-    predSpeed = diveSpeed;
-    predState = centerState();
+    predState = centerState(predSpeed);
     break;
   }
 
   // calculate and draw the desired position
   // only when clusters have had time to form
-  if (largestCluster.clusterCount <= (int)bs.boids.size()) {
-    velocity += acceleration;
-    velocity = normalize(velocity) * predSpeed;
+  if (largestCluster.clusterCount <= (int)bs.boids.size() && largestCluster.clusterCount >= 0) {
+	// temporary steering factor
+    velocity += acceleration * 0.05f;
+
+	if(!hasDived){
+	  diveAccel -= 0.01f;
+	  predSpeed = std::max(diveAccel, predSpeed);
+	}
+	else{
+	  diveAccel += 0.02f;
+	  predSpeed = std::min(diveAccel, maxSpeed);
+	}
+
+	velocity = normalize(velocity) * predSpeed;
   }
 
   if (!isPaused) {
@@ -96,15 +106,26 @@ void Predator::update(BoidSystem bs, float dt, float predSpeed, float diveSpeed,
 }
 
 Predator::state Predator::idleState() {
-  if (timeElapsed >= idleTime) {
-    // decide margin or center
-    timeElapsed = 0.f;
-    return CENTER;
-  }
+  Vec2f clusterCenter = largestCluster.averageCenter();
+  float dx = (position.x - clusterCenter.x) * 640.f;
+  float dy = (position.y - clusterCenter.y) * 360.f;
+  float predatorDistance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
 
-  // otherwise attempt to match the velocity of the largest flock
-  Vec2f clusterVelocity = largestCluster.averageVelocity();
-  acceleration += clusterVelocity;
+  if(predatorDistance >= largestCluster.clusterRadius() + 80.f){
+    Vec2f targetVector = normalize(clusterCenter - position);
+    acceleration += targetVector;
+  }
+  else{
+	// otherwise attempt to match the velocity of the largest flock
+	Vec2f clusterVelocity = largestCluster.averageVelocity();
+	acceleration += clusterVelocity;
+	// only dive when in the right distance
+	if (timeElapsed >= idleTime) {
+	  // decide margin or center?
+	  timeElapsed = 0.f;
+	  return CENTER;
+	}
+  }
 
   return IDLE;
 }
@@ -119,7 +140,7 @@ Predator::state Predator::marginState() {
   return MARGIN;
 }
 
-Predator::state Predator::centerState() {
+Predator::state Predator::centerState(float predSpeed) {
   if (timeElapsed >= diveTime) {
     timeElapsed = 0.f;
     return IDLE;
@@ -131,6 +152,7 @@ Predator::state Predator::centerState() {
     Vec2f clusterCenter = largestCluster.averageCenter();
     Vec2f targetVector = normalize(clusterCenter - position);
     acceleration += targetVector;
+	diveAccel = predSpeed;
     hasDived = true;
   }
 

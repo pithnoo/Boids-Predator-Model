@@ -11,8 +11,9 @@ Boid::Boid() {
   velocity = {ax, ay};
 }
 
-Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
-                    float boidSpeed, float seperationFactor,
+Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
+                    ShaderProgram *prog, float dt, float boidSpeed,
+                    float predatorFactor, float seperationFactor,
                     float alignmentFactor, float cohesionFactor,
                     float boundaryForce, float steeringFactor, bool isPaused) {
 
@@ -65,16 +66,16 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
     dy = (position.y - b.position.y) * 360.f;
 
     // pythagorus to find distance between neighbours
-    neighbourDistance = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
+    neighbourDistance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
 
-	// ignores vision angle
+    // ignores vision angle
     if (neighbourDistance <= dbDistance) {
       boidIDs.emplace_back(b.id);
     }
-	
-	// finding boid vision angle
-	Vec2f dv = Vec2f{dx, dy};
-	float da = dot(dv, velocity) / (neighbourDistance * length(velocity));
+
+    // finding boid vision angle
+    Vec2f dv = Vec2f{dx, dy};
+    float da = dot(dv, velocity) / (neighbourDistance * length(velocity));
 
     // TODO: put an angle here for boid sight range
     if (neighbourDistance <= boidRange && acos(da) < visionAngle) {
@@ -94,6 +95,13 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   }
 
   Vec2f ruleAcceleration = {0.f, 0.f};
+
+  // predator: ensure that boids move away from predator above all else
+  float px = (position.x - predatorPosition.x) * 640.f;
+  float py = (position.y - predatorPosition.y) * 360.f;
+  float predatorDistance = std::sqrt(std::pow(px, 2) + std::pow(py, 2));
+  if(predatorDistance <= 40.f)
+	acceleration += normalize(position - predatorPosition) * boundaryForce;
 
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
@@ -173,11 +181,12 @@ Mat33f Boid::update(std::vector<Boid> &boids, ShaderProgram *prog, float dt,
   return boidTransform;
 }
 
-Vec2f BoidCluster::averageCenter(){
+
+Vec2f BoidCluster::averageCenter() {
   Vec2f clusterCenter = {0.f, 0.f};
 
-  for(auto &b : clusterBoids){
-	clusterCenter += b.position;
+  for (auto &b : clusterBoids) {
+    clusterCenter += b.position;
   }
 
   clusterCenter /= clusterBoids.size();
@@ -185,11 +194,26 @@ Vec2f BoidCluster::averageCenter(){
   return clusterCenter;
 }
 
-Vec2f BoidCluster::averageVelocity(){
+float BoidCluster::clusterRadius(){
+  Vec2f cluster = averageCenter();
+
+  if(edgeBoids.size() <= 0)
+	return 0.f;
+
+  Boid edgeBoid = edgeBoids[0];
+
+  float dx = (cluster.x - edgeBoid.position.x) * 640.f;
+  float dy = (cluster.y - edgeBoid.position.y) * 360.f;
+  float radius = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+
+  return radius;
+}
+
+Vec2f BoidCluster::averageVelocity() {
   Vec2f clusterVelocity = {0.f, 0.f};
 
-  for(auto &b : clusterBoids){
-	clusterVelocity += b.velocity;
+  for (auto &b : clusterBoids) {
+    clusterVelocity += b.velocity;
   }
 
   clusterVelocity /= clusterBoids.size();
@@ -220,7 +244,8 @@ BoidSystem::BoidSystem(int N) : boids(N) {
   glEnableVertexAttribArray(0);
 }
 
-void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
+void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
+                        float boidSpeed, float predatorFactor,
                         float seperationFactor, float alignmentFactor,
                         float cohesionFactor, float boundaryForce,
                         float steeringFactor, bool isPaused) {
@@ -229,14 +254,15 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
   int c = 0;
 
-  if(!isPaused)
-	clusters.clear();
+  if (!isPaused)
+    clusters.clear();
 
   for (auto &b : boids) {
     // calculating transformation
     Mat33f transformation =
-        b.update(boids, prog, dt, boidSpeed, seperationFactor, alignmentFactor,
-                 cohesionFactor, boundaryForce, steeringFactor, isPaused);
+        b.update(boids, predatorPosition, prog, dt, boidSpeed, predatorFactor,
+                 seperationFactor, alignmentFactor, cohesionFactor,
+                 boundaryForce, steeringFactor, isPaused);
 
     // 3 vertex points to be added to VBO
     for (auto &v : b.boidPositions) {
@@ -254,7 +280,7 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       // is b a core point?
       if (b.boidIDs.size() < 3) {
         // noise point, not border or core point
-		// printf("noise point %i, neighbours: %li\n", b.id, b.boidIDs.size());
+        // printf("noise point %i, neighbours: %li\n", b.id, b.boidIDs.size());
         continue;
       }
 
@@ -278,34 +304,29 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
         i++;
         c++;
 
-        if (boids[id].isVisited){
-		  // std::printf("skipping %i, visited: %d\n", id, boids[id].isVisited);
+        if (boids[id].isVisited) {
+          // std::printf("skipping %i, visited: %d\n", id, boids[id].isVisited);
           continue;
-		}
+        }
 
         boids[id].isVisited = true;
 
         // core point
         if (boids[id].boidIDs.size() >= 2) {
-		  // add neighbour points to the current search array
+          // add neighbour points to the current search array
           b.boidIDs.insert(b.boidIDs.end(), boids[id].boidIDs.begin(),
                            boids[id].boidIDs.end());
-		  /*
-          std::printf("origin chain: %i, current size: %li, neighbour size: %li\n", boids[id].id,
-                      b.boidIDs.size(), boids[id].boidIDs.size());
-		  */
+          /*
+  std::printf("origin chain: %i, current size: %li, neighbour size: %li\n",
+  boids[id].id, b.boidIDs.size(), boids[id].boidIDs.size());
+          */
+        } else {
+          // otherwise, this is a border point
+          // this should be known to search edge boids and boids in the cluster
+          cluster.edgeBoids.emplace_back(boids[id]);
         }
-		else{
-		  // otherwise, this is a border point
-		  // this should be known to search edge boids and boids in the cluster
-		  cluster.edgeBoids.emplace_back(boids[id]);
-		}
 
         if (!boids[id].inCluster) {
-		  /*
-          std::printf("adding %i, visited: %d, neighbours: %li\n", id,
-                      boids[id].isVisited, boids[id].boidIDs.size());
-		  */
           boids[id].inCluster = true;
           cluster.clusterBoids.emplace_back(boids[id]);
           cluster.clusterCount++;
@@ -315,11 +336,12 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
       // add the cluster
       if (cluster.clusterCount > 0) {
         clusters.emplace_back(cluster);
-		/*
-		std::printf("----------------------------------------------\n");
-		std::printf("clusters: %li, cluster size: %i\n", clusters.size(), cluster.clusterCount);
-		std::printf("----------------------------------------------\n");
-		*/
+        /*
+        std::printf("----------------------------------------------\n");
+        std::printf("clusters: %li, cluster size: %i\n", clusters.size(),
+        cluster.clusterCount);
+        std::printf("----------------------------------------------\n");
+        */
       }
     }
   }
@@ -327,17 +349,17 @@ void BoidSystem::update(ShaderProgram *prog, float dt, float boidSpeed,
 
   if (!isPaused) {
     // reset values for next scan
-	for(size_t i = 0; i < boids.size(); i++){
+    for (size_t i = 0; i < boids.size(); i++) {
       // reset until proven otherwise
-	  boids[i].isVisited = false;
-	  boids[i].isNoise = false;
-	  boids[i].inCluster = false;
-	  boids[i].isCore = false;
-	  // boid ids will be cleared on the next update
-	}
+      boids[i].isVisited = false;
+      boids[i].isNoise = false;
+      boids[i].inCluster = false;
+      boids[i].isCore = false;
+      // boid ids will be cleared on the next update
+    }
 
-    // std::printf("values reset! Total counts: %i, Final Size: %li\n", c, clusters.size());
-	// this later will only be cleaned by the predator
+    // std::printf("values reset! Total counts: %i, Final Size: %li\n", c,
+    // clusters.size());
   }
 
   draw(prog, boidBuffer);
@@ -363,16 +385,16 @@ void BoidSystem::draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer) {
   boidBuffer.clear();
 }
 
-BoidCluster BoidSystem::highestCluster(){
+BoidCluster BoidSystem::highestCluster() {
   BoidCluster maxCluster;
   int currentMax = 0;
 
   // note that this may be cleared
-  for(auto &c : clusters){
-	if(c.clusterCount > currentMax){
-	  currentMax = c.clusterCount;
-	  maxCluster = c;
-	}
+  for (auto &c : clusters) {
+    if (c.clusterCount > currentMax) {
+      currentMax = c.clusterCount;
+      maxCluster = c;
+    }
   }
 
   return maxCluster;

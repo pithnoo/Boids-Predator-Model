@@ -4,15 +4,15 @@
 #include <glad/glad.h>
 #include <GL/glext.h>
 
-#include <vector>
-#include <iostream>
-#include <math.h>
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
+#include <math.h>
+#include <vector>
 
-#include "../vmlib/vec2.hpp"
-#include "../vmlib/mat33.hpp"
 #include "../support/program.hpp"
+#include "../vmlib/mat33.hpp"
+#include "../vmlib/vec2.hpp"
 
 class Boid {
 public:
@@ -23,7 +23,7 @@ public:
   Vec2f position = {0.f, 0.f};
 
   // current velocity of boid
-  Vec2f velocity = { 0.f, 0.f };
+  Vec2f velocity = {0.f, 0.f};
 
   // what direction the boid is pointing at
   float rotation = 0;
@@ -41,42 +41,46 @@ public:
   bool inCluster = false;
 
   // boid initial colour
-  float const boidColor[3] = { 0.f, 0.5f, 1.f };
+  float const boidColor[3] = {0.f, 0.5f, 1.f};
 
   // initial boid positions
   std::vector<Vec3f> boidPositions = {
-	Vec3f(0.f, 0.01f, 1.f),
-	Vec3f(-0.005f, -0.005f, 1.f),
-	Vec3f(0.005f, -0.005f, 1.f),
+      Vec3f(0.f, 0.01f, 1.f),
+      Vec3f(-0.005f, -0.005f, 1.f),
+      Vec3f(0.005f, -0.005f, 1.f),
   };
 
   // initialise boid
   Boid();
 
-  Boid& operator=(const Boid &boid){
-	// boid properties
-	position = boid.position;
-	rotation = boid.rotation;
-	atBoundary = boid.atBoundary;
-	acceleration = boid.acceleration;
-	velocity = boid.velocity;
-	// DBscan properties
-	boidIDs = boid.boidIDs;
-	isNoise = boid.isNoise;
-	isVisited = boid.isVisited;
-	isCore = boid.isCore;
-	inCluster = boid.inCluster;
+  Boid &operator=(const Boid &boid) {
+    // boid properties
+    position = boid.position;
+    rotation = boid.rotation;
+    atBoundary = boid.atBoundary;
+    acceleration = boid.acceleration;
+    velocity = boid.velocity;
+    // DBscan properties
+    boidIDs = boid.boidIDs;
+    isNoise = boid.isNoise;
+    isVisited = boid.isVisited;
+    isCore = boid.isCore;
+    inCluster = boid.inCluster;
 
-	return *this;
+    return *this;
   }
 
-  Mat33f update(std::vector<Boid>& boids, ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor, bool isPaused);
+  Mat33f update(std::vector<Boid> &boids, Vec2f predatorPosition,
+                ShaderProgram *prog, float dt, float boidSpeed,
+                float predatorFactor, float seperationFactor,
+                float alignmentFactor, float cohesionFactor,
+                float boundaryForce, float steeringFactor, bool isPaused);
 
 private:
   std::vector<Boid> neighbours;
   std::vector<Boid> closeNeighbours;
 
-  float visionAngle = (5*M_PI) / 6;
+  float visionAngle = (5 * M_PI) / 6;
 
   // float visionAngle = 0.f;
 
@@ -93,7 +97,7 @@ private:
   float boidRange = 50.f;
 
   // the boid's acceleration, which will change depending on bounds
-  Vec2f acceleration = { 0.f, 0.f };
+  Vec2f acceleration = {0.f, 0.f};
 };
 
 class BoidCluster {
@@ -104,6 +108,9 @@ public:
 
   // return average centroid of boids
   Vec2f averageCenter();
+
+  // return radius of the cluster (center to edge)
+  float clusterRadius();
 
   // return average velocity of boids
   Vec2f averageVelocity();
@@ -125,17 +132,20 @@ public:
 
   BoidSystem(int N);
 
-  void update(ShaderProgram* prog, float dt, float boidSpeed, float seperationFactor, float alignmentFactor, float cohesionFactor, float boundaryForce, float steeringFactor, bool isPaused);
+  void update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
+              float boidSpeed, float predatorFactor, float seperationFactor,
+              float alignmentFactor, float cohesionFactor, float boundaryForce,
+              float steeringFactor, bool isPaused);
 
   BoidCluster highestCluster();
 
   void draw(ShaderProgram *prog, std::vector<Vec3f> boidBuffer);
-  
+
 private:
   GLuint vao = 0;
   GLuint posVBO = 0;
 
-  float const boidColor[3] = { 0.f, 0.5f, 1.f };
+  float const boidColor[3] = {0.f, 0.5f, 1.f};
 };
 
 #endif
