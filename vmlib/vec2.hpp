@@ -134,4 +134,14 @@ Vec2f normalize( Vec2f aVec) noexcept
   return aVec / l;
 }
 
+inline
+float euclidean( Vec2f aLeft, Vec2f aRight ){
+    float dx = (aLeft.x - aRight.x) * 640.f;
+    float dy = (aLeft.y - aRight.y) * 360.f;
+
+    // pythagorus to find distance between neighbours
+    float distance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+
+	return distance;
+}
 #endif // VEC2_HPP_E2534611_CE12_4452_8ACE_ACBCF5C47CAE

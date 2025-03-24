@@ -65,8 +65,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
     dx = (position.x - b.position.x) * 640.f;
     dy = (position.y - b.position.y) * 360.f;
 
-    // pythagorus to find distance between neighbours
-    neighbourDistance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+	neighbourDistance = euclidean(position, b.position);
 
     // ignores vision angle
     if (neighbourDistance <= dbDistance) {
@@ -97,9 +96,8 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
   Vec2f ruleAcceleration = {0.f, 0.f};
 
   // predator: ensure that boids move away from predator above all else
-  float px = (position.x - predatorPosition.x) * 640.f;
-  float py = (position.y - predatorPosition.y) * 360.f;
-  float predatorDistance = std::sqrt(std::pow(px, 2) + std::pow(py, 2));
+  float predatorDistance = euclidean(position, predatorPosition);
+
   if(predatorDistance <= 40.f)
 	acceleration += normalize(position - predatorPosition) * boundaryForce;
 
@@ -201,10 +199,7 @@ float BoidCluster::clusterRadius(){
 	return 0.f;
 
   Boid edgeBoid = edgeBoids[0];
-
-  float dx = (cluster.x - edgeBoid.position.x) * 640.f;
-  float dy = (cluster.y - edgeBoid.position.y) * 360.f;
-  float radius = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+  float radius = euclidean(cluster, edgeBoid.position);
 
   return radius;
 }

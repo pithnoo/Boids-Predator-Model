@@ -107,9 +107,8 @@ void Predator::update(BoidSystem bs, float dt, float predSpeed, float diveSpeed,
 
 Predator::state Predator::idleState() {
   Vec2f clusterCenter = largestCluster.averageCenter();
-  float dx = (position.x - clusterCenter.x) * 640.f;
-  float dy = (position.y - clusterCenter.y) * 360.f;
-  float predatorDistance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+
+  float predatorDistance = euclidean(position, clusterCenter);
 
   if(predatorDistance >= largestCluster.clusterRadius() + 80.f){
     Vec2f targetVector = normalize(clusterCenter - position);
