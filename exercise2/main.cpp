@@ -146,7 +146,7 @@ int main() try {
   glEnable(GL_CULL_FACE);
 
   // pixels will be cleared to this by default
-  glClearColor(1.f, 1.f, 1.f, 1.f);
+  glClearColor(0.25f, 0.25f, 0.25f, 1.f);
 
   // imgui setup
   IMGUI_CHECKVERSION();
@@ -185,7 +185,7 @@ int main() try {
   float seperationFactor = 1.9f;
   float alignmentFactor = 0.7f;
   float cohesionFactor = 0.4f;
-  float boundaryForce = 0.15f;
+  float boundaryForce = 0.25f;
   float steeringFactor = 0.1f;
 
   // Animation state

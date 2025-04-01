@@ -41,7 +41,7 @@ public:
   bool inCluster = false;
 
   // boid initial colour
-  float const boidColor[3] = {0.f, 0.5f, 1.f};
+  float const boidColor[3] = {0.f, 0.f, 0.f};
 
   // initial boid positions
   std::vector<Vec3f> boidPositions = {
@@ -145,7 +145,7 @@ private:
   GLuint vao = 0;
   GLuint posVBO = 0;
 
-  float const boidColor[3] = {0.f, 0.5f, 1.f};
+  float const boidColor[3] = {0.f, 0.f, 0.f};
 };
 
 #endif

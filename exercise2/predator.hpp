@@ -51,7 +51,7 @@ public:
 	Vec3f(0.006f, -0.006f, 1.f),
   };
 
-  float const predColor[3] = { 1.f, 0.f, 0.f };
+  float const predColor[3] = { 1.f, 1.f, 1.f };
 
   // time elapsed for predator
   float timeElapsed = 0.f;

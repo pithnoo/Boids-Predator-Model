@@ -135,7 +135,6 @@ Predator::state Predator::marginState() {
     return IDLE;
   }
   // we can target a random edge boid later
-
   return MARGIN;
 }
 
