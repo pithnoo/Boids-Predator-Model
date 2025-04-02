@@ -40,7 +40,7 @@ struct State_ {
   Predator *p;
 };
 
-void updateGui(float&, float&, float&, float&, float&, float&, float);
+void updateGui(State_&, float&, float&, float&, float&, float&, float&, float);
 
 void glfw_callback_error_(int, char const *);
 
@@ -234,7 +234,7 @@ int main() try {
       timeElapsed = 0.f;
     }
 
-    updateGui(boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce, steeringFactor, displayFps);
+    updateGui(state, boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce, steeringFactor, displayFps);
 
     // Draw scene
     OGL_CHECKPOINT_DEBUG();
@@ -291,33 +291,43 @@ void glfw_callback_error_(int aErrNum, char const *aErrDesc) {
   std::fprintf(stderr, "GLFW error: %s (%d)\n", aErrDesc, aErrNum);
 }
 
-void updateGui(float &boidSpeed,
-			   float &seperationFactor,
-			   float &alignmentFactor,
-			   float &cohesionFactor,
-			   float &boundaryForce,
-			   float &steeringFactor,
-			   float fps 
-			   ){
-  // add reset button
-  // add pause button
+  void updateGui(State_ &state,
+		 float &boidSpeed,
+		 float &seperationFactor,
+		 float &alignmentFactor,
+		 float &cohesionFactor,
+		 float &boundaryForce,
+		 float &steeringFactor,
+		 float fps 
+		 ){
+    ImGui::Begin("Boid Settings");
 
-  ImGui::Begin("Boid Settings");
-  ImGui::Text("%.1f FPS", fps);
-  ImGui::Text("Boid Properties");
+    // add pause button
+    if(ImGui::Button("Pause")){
+      state.isPaused = !state.isPaused;
+    }
 
-  // implement boid vision angle
-  ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 3.f);
-  ImGui::Text("Boid Rules");
-  ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 10.0f);
-  ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 3.0f);
-  ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 3.0f);
-  ImGui::SliderFloat("Steering Factor", &steeringFactor, 0.0f, 3.f);
-  ImGui::Text("Misc");
-  ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 3.f);
-  ImGui::End();
+    // add reset button
+    if(ImGui::Button("Reset")){
+      state.bs->resetPositions();
+      state.p->resetPosition();
+    }
 
-  // add predator bars
+    ImGui::Text("%.1f FPS", fps);
+    ImGui::Text("Boid Properties");
+
+    // implement boid vision angle
+    ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 3.f);
+    ImGui::Text("Boid Rules");
+    ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 10.0f);
+    ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 3.0f);
+    ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 3.0f);
+    ImGui::SliderFloat("Steering Factor", &steeringFactor, 0.0f, 3.f);
+    ImGui::Text("Misc");
+    ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 3.f);
+    ImGui::End();
+
+    // add predator bars
 }
 
 void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
@@ -330,7 +340,6 @@ void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
     glfwSetWindowShouldClose(aWindow, GLFW_TRUE);
     return;
   }
-
 
   if (auto *state = static_cast<State_ *>(glfwGetWindowUserPointer(aWindow))) {
     // R-key reloads shaders.
@@ -349,9 +358,10 @@ void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
         }
       }
     }
-	if(GLFW_KEY_P == aKey && GLFW_PRESS == aAction){
-	  state->isPaused = !state->isPaused;
-	}
+
+    if(GLFW_KEY_P == aKey && GLFW_PRESS == aAction){
+      state->isPaused = !state->isPaused;
+    }
   }
 }
 } // namespace
