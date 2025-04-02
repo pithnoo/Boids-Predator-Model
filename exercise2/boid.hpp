@@ -19,8 +19,14 @@ public:
   // allowing identification of each boid, this will be assigned from BoidSystem
   int id = 0;
 
+  // vision range of a boid
+  float visionAngle = (5 * M_PI) / 6;
+
   // central position of the boid
   Vec2f position = {0.f, 0.f};
+
+  // initial position of boid
+  Vec2f initialPosition;
 
   // current velocity of boid
   Vec2f velocity = {0.f, 0.f};
@@ -60,6 +66,7 @@ public:
     atBoundary = boid.atBoundary;
     acceleration = boid.acceleration;
     velocity = boid.velocity;
+
     // DBscan properties
     boidIDs = boid.boidIDs;
     isNoise = boid.isNoise;
@@ -80,9 +87,6 @@ private:
   std::vector<Boid> neighbours;
   std::vector<Boid> closeNeighbours;
 
-  float visionAngle = (5 * M_PI) / 6;
-
-  // float visionAngle = 0.f;
 
   // minimum distance before rotating against boundary
   float minDistance = 50.f;
@@ -130,7 +134,12 @@ public:
   // for the predator to identify
   std::vector<BoidCluster> clusters;
 
+  // storing initial positions for boid reset
+  std::vector<Vec2f> initialPositions;
+
   BoidSystem(int N);
+
+  void resetPositions();
 
   void update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
               float boidSpeed, float predatorFactor, float seperationFactor,

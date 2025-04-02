@@ -4,7 +4,9 @@ Boid::Boid() {
   // calculate boid size (co-ordinates should be decided so scale of the boid?)
   float x = (std::rand() % 1000 * 0.002f) - 1.0f;
   float y = (std::rand() % 1000 * 0.002f) - 1.0f;
-  position = {x, y};
+
+  initialPosition = {x, y};
+  position = initialPosition;
 
   float ax = std::rand() % 10000 * 0.01f;
   float ay = std::rand() % 10000 * 0.01f;
@@ -65,7 +67,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
     dx = (position.x - b.position.x) * 640.f;
     dy = (position.y - b.position.y) * 360.f;
 
-	neighbourDistance = euclidean(position, b.position);
+    neighbourDistance = euclidean(position, b.position);
 
     // ignores vision angle
     if (neighbourDistance <= dbDistance) {
@@ -217,10 +219,13 @@ Vec2f BoidCluster::averageVelocity() {
 }
 
 BoidSystem::BoidSystem(int N) : boids(N) {
-  // assign an ID to identify each boid
   int boidID = 0;
 
   for (auto &b : boids) {
+    // assign initial position of boid for reset
+    initialPositions.emplace_back(b.position);
+    
+    // assign an ID to identify each boid
     b.id = boidID;
     boidID++;
   }
@@ -237,6 +242,12 @@ BoidSystem::BoidSystem(int N) : boids(N) {
   glBindBuffer(GL_ARRAY_BUFFER, posVBO);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);
+}
+
+void BoidSystem::resetPositions(){
+  for (auto &b : boids) {
+    b.position = b.initialPosition;
+  }
 }
 
 void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
@@ -275,7 +286,6 @@ void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
       // is b a core point?
       if (b.boidIDs.size() < 3) {
         // noise point, not border or core point
-        // printf("noise point %i, neighbours: %li\n", b.id, b.boidIDs.size());
         continue;
       }
 
@@ -300,7 +310,6 @@ void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
         c++;
 
         if (boids[id].isVisited) {
-          // std::printf("skipping %i, visited: %d\n", id, boids[id].isVisited);
           continue;
         }
 
@@ -311,10 +320,6 @@ void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
           // add neighbour points to the current search array
           b.boidIDs.insert(b.boidIDs.end(), boids[id].boidIDs.begin(),
                            boids[id].boidIDs.end());
-          /*
-  std::printf("origin chain: %i, current size: %li, neighbour size: %li\n",
-  boids[id].id, b.boidIDs.size(), boids[id].boidIDs.size());
-          */
         } else {
           // otherwise, this is a border point
           // this should be known to search edge boids and boids in the cluster
@@ -352,9 +357,6 @@ void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
       boids[i].isCore = false;
       // boid ids will be cleared on the next update
     }
-
-    // std::printf("values reset! Total counts: %i, Final Size: %li\n", c,
-    // clusters.size());
   }
 
   draw(prog, boidBuffer);

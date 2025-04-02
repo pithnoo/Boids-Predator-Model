@@ -6,6 +6,8 @@
 
 class Predator{
 public:
+  // initial position of the predator
+  Vec2f initialPosition = { 0.f, 0.f };
   Vec2f position = { 0.f, 0.f };
   Vec2f velocity = { 0.f, 0.f };
   Vec2f acceleration = { 0.f, 0.f };
@@ -40,6 +42,8 @@ public:
 
   // initialise with knowledge of boid system
   Predator(ShaderProgram *prog);
+
+  void resetPosition();
 
   void update(BoidSystem bs, float dt, float predSpeed, float diveSpeed, float boundaryForce, bool isPaused);
 

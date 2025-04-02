@@ -17,6 +17,10 @@ Predator::Predator(ShaderProgram *prog) {
   glEnableVertexAttribArray(0);
 }
 
+void Predator::resetPosition(){
+  position = initialPosition;
+}
+
 void Predator::update(BoidSystem bs, float dt, float predSpeed, float diveSpeed,
                       float boundaryForce, bool isPaused) {
   // update time taken (for states)

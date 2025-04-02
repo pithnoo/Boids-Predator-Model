@@ -110,7 +110,6 @@ project "exercise2-shaders"
 
 	files( shaders )
 
-
 project "support"
 	local sources = { 
 		"support/**.cpp",
@@ -136,6 +135,5 @@ project "vmlib"
 	location "vmlib"
 
 	files( sources )
-
 
 --EOF

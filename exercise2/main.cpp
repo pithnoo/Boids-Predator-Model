@@ -35,6 +35,9 @@ constexpr char const *kWindowTitle = "Boids Program";
 struct State_ {
   ShaderProgram *prog;
   bool isPaused = false;
+
+  BoidSystem *bs;
+  Predator *p;
 };
 
 void updateGui(float&, float&, float&, float&, float&, float&, float);
@@ -70,7 +73,7 @@ int main() try {
   glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 
-  // glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
+  glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
 
 #if !defined(__APPLE__)
   // Most platforms will support OpenGL 4.3
@@ -93,8 +96,6 @@ int main() try {
 
   GLFWwindow *window =
       glfwCreateWindow(1280, 720, kWindowTitle, nullptr, nullptr);
-  // glfwCreateWindow(1280, 720, kWindowTitle, glfwGetPrimaryMonitor(),
-  // nullptr);
 
   if (!window) {
     char const *msg = nullptr;
@@ -177,9 +178,11 @@ int main() try {
   BoidSystem bs(300);
   Predator p(state.prog);
 
+  state.bs = &bs;
+  state.p = &p;
+
   // boid default values
   float boidSpeed = 0.25f;
-  float predSpeed = 0.1f;
   float diveSpeed = boidSpeed;
   float predatorFactor = 1.f;
   float seperationFactor = 1.9f;
@@ -223,13 +226,13 @@ int main() try {
     // Update state
     auto const now = Clock::now();
     float dt = std::chrono::duration_cast<Secondsf>(now - last).count();
-	timeElapsed += dt;
+    timeElapsed += dt;
     last = now;
 
-	if(timeElapsed >= 1.f){
-	  displayFps = 1.f / dt;
-	  timeElapsed = 0.f;
-	}
+    if(timeElapsed >= 1.f){
+      displayFps = 1.f / dt;
+      timeElapsed = 0.f;
+    }
 
     updateGui(boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce, steeringFactor, displayFps);
 
@@ -239,28 +242,28 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
-	bs.update(
-			  state.prog,
-			  p.position,
-			  dt,
-			  boidSpeed,
-			  predatorFactor,
-			  seperationFactor,
-			  alignmentFactor,
-			  cohesionFactor,
-			  boundaryForce,
-			  steeringFactor,
-			  state.isPaused
-			  );
+    bs.update(
+	      state.prog,
+	      p.position,
+	      dt,
+	      boidSpeed,
+	      predatorFactor,
+	      seperationFactor,
+	      alignmentFactor,
+	      cohesionFactor,
+	      boundaryForce,
+	      steeringFactor,
+	      state.isPaused
+	      );
 
-	p.update(
-			 bs,
-			 dt,
-			 boidSpeed * 1.05f,
-			 diveSpeed,
-			 boundaryForce * 3.f,
-			 state.isPaused
-			 );
+    p.update(
+	     bs,
+	     dt,
+	     boidSpeed * 1.05f,
+	     diveSpeed,
+	     boundaryForce * 3.f,
+	     state.isPaused
+	     );
 
     // render gui window
     ImGui::Render();
@@ -296,10 +299,14 @@ void updateGui(float &boidSpeed,
 			   float &steeringFactor,
 			   float fps 
 			   ){
+  // add reset button
+  // add pause button
 
   ImGui::Begin("Boid Settings");
   ImGui::Text("%.1f FPS", fps);
   ImGui::Text("Boid Properties");
+
+  // implement boid vision angle
   ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 3.f);
   ImGui::Text("Boid Rules");
   ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 10.0f);
@@ -309,6 +316,8 @@ void updateGui(float &boidSpeed,
   ImGui::Text("Misc");
   ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 3.f);
   ImGui::End();
+
+  // add predator bars
 }
 
 void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
@@ -329,7 +338,10 @@ void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
       if (state->prog) {
         try {
           state->prog->reload();
+	  state->bs->resetPositions();
+	  state->p->resetPosition();
           std::fprintf(stderr, "Shaders reloaded and recompiled.\n");
+
         } catch (std::exception const &eErr) {
           std::fprintf(stderr, "Error when reloading shader:\n");
           std::fprintf(stderr, "%s\n", eErr.what());
