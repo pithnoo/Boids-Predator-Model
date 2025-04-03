@@ -81,7 +81,7 @@ public:
                 ShaderProgram *prog, float dt, float boidSpeed,
                 float boidVision, float predatorFactor, float seperationFactor,
                 float alignmentFactor, float cohesionFactor,
-                float boundaryForce, float steeringFactor, bool isPaused);
+                float boundaryForce, float steeringFactor, bool predatorActive, bool isPaused);
 
 private:
   std::vector<Boid> neighbours;
@@ -143,7 +143,7 @@ public:
   void update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
               float boidSpeed, float boidVision, float predatorFactor,
               float seperationFactor, float alignmentFactor,
-              float cohesionFactor, float boundaryForce, float steeringFactor,
+              float cohesionFactor, float boundaryForce, float steeringFactor, bool predatorActive,
               bool isPaused);
 
   BoidCluster highestCluster();

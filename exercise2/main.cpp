@@ -40,7 +40,7 @@ struct State_ {
   Predator *p;
 };
 
-void updateGui(State_ &, float &, float &, float &, float &, float &, float &,
+void updateGui(State_ &, bool &, float &, float &, float &, float &, float &, float &,
                float &, float &, float);
 
 void glfw_callback_error_(int, char const *);
@@ -152,7 +152,7 @@ int main() try {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
-  io.FontGlobalScale = 2.f;
+  io.FontGlobalScale = 1.5f;
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init();
@@ -190,6 +190,7 @@ int main() try {
   float boundaryForce = 0.25f;
   float steeringFactor = 0.1f;
   float predatorFactor = 0.25f;
+  bool predatorActive = false;
 
   // Animation state
   auto last = Clock::now();
@@ -234,7 +235,7 @@ int main() try {
       timeElapsed = 0.f;
     }
 
-    updateGui(state, boidVision, boidSpeed, seperationFactor, alignmentFactor,
+    updateGui(state, predatorActive, boidVision, boidSpeed, seperationFactor, alignmentFactor,
               cohesionFactor, boundaryForce, steeringFactor, predatorFactor, displayFps);
 
     // Draw scene
@@ -245,10 +246,15 @@ int main() try {
 
     bs.update(state.prog, p.position, dt, boidSpeed, boidVision, predatorFactor,
               seperationFactor, alignmentFactor, cohesionFactor, boundaryForce,
-              steeringFactor, state.isPaused);
+              steeringFactor, predatorActive, state.isPaused);
 
-    p.update(bs, dt, boidSpeed * 1.05f, diveSpeed, boundaryForce * 4.f,
+    if(predatorActive){
+      p.update(bs, dt, boidSpeed * 1.05f, diveSpeed, boundaryForce * 4.f,
              state.isPaused);
+    }
+    else{
+      state.p->resetPosition();
+    }
 
     // render gui window
     ImGui::Render();
@@ -276,10 +282,11 @@ void glfw_callback_error_(int aErrNum, char const *aErrDesc) {
   std::fprintf(stderr, "GLFW error: %s (%d)\n", aErrDesc, aErrNum);
 }
 
-void updateGui(State_ &state, float &boidVision, float &boidSpeed,
+  void updateGui(State_ &state, bool &predatorActive, float &boidVision, float &boidSpeed,
                float &seperationFactor, float &alignmentFactor,
                float &cohesionFactor, float &boundaryForce,
                float &steeringFactor, float &predatorFactor, float fps) {
+
   ImGui::Begin("Boid Settings");
   ImGui::Text("%.1f FPS", fps);
 
@@ -293,6 +300,8 @@ void updateGui(State_ &state, float &boidVision, float &boidSpeed,
     state.bs->resetPositions();
     state.p->resetPosition();
   }
+
+  ImGui::Checkbox("Predator Active", &predatorActive);
 
   ImGui::Text("Boid Properties");
   // implement boid vision angle

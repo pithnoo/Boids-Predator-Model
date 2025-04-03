@@ -18,7 +18,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
                     float boidVision, float predatorFactor,
                     float seperationFactor, float alignmentFactor,
                     float cohesionFactor, float boundaryForce,
-                    float steeringFactor, bool isPaused) {
+                    float steeringFactor, bool predatorActive, bool isPaused) {
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -101,8 +101,8 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
   // predator: ensure that boids move away from predator above all else
   float predatorDistance = euclidean(position, predatorPosition);
 
-  if (predatorDistance <= 40.f)
-    acceleration += normalize(position - predatorPosition) * boundaryForce;
+  if (predatorDistance <= 40.f && predatorActive)
+    acceleration += normalize(position - predatorPosition) * predatorFactor;
 
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
@@ -254,7 +254,7 @@ void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
                         float boidSpeed, float boidVision, float predatorFactor,
                         float seperationFactor, float alignmentFactor,
                         float cohesionFactor, float boundaryForce,
-                        float steeringFactor, bool isPaused) {
+                        float steeringFactor, bool predatorActive, bool isPaused) {
 
   std::vector<Vec3f> boidBuffer;
 
@@ -266,9 +266,9 @@ void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
   for (auto &b : boids) {
     // calculating transformation
     Mat33f transformation =
-        b.update(boids, predatorPosition, prog, dt, boidSpeed, boidVision,
-                 predatorFactor, seperationFactor, alignmentFactor,
-                 cohesionFactor, boundaryForce, steeringFactor, isPaused);
+      b.update(boids, predatorPosition, prog, dt, boidSpeed, boidVision,
+	       predatorFactor, seperationFactor, alignmentFactor,
+	       cohesionFactor, boundaryForce, steeringFactor, predatorActive, isPaused);
 
     // 3 vertex points to be added to VBO
     for (auto &v : b.boidPositions) {
