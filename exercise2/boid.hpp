@@ -79,14 +79,13 @@ public:
 
   Mat33f update(std::vector<Boid> &boids, Vec2f predatorPosition,
                 ShaderProgram *prog, float dt, float boidSpeed,
-                float predatorFactor, float seperationFactor,
+                float boidVision, float predatorFactor, float seperationFactor,
                 float alignmentFactor, float cohesionFactor,
                 float boundaryForce, float steeringFactor, bool isPaused);
 
 private:
   std::vector<Boid> neighbours;
   std::vector<Boid> closeNeighbours;
-
 
   // minimum distance before rotating against boundary
   float minDistance = 50.f;
@@ -142,9 +141,10 @@ public:
   void resetPositions();
 
   void update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
-              float boidSpeed, float predatorFactor, float seperationFactor,
-              float alignmentFactor, float cohesionFactor, float boundaryForce,
-              float steeringFactor, bool isPaused);
+              float boidSpeed, float boidVision, float predatorFactor,
+              float seperationFactor, float alignmentFactor,
+              float cohesionFactor, float boundaryForce, float steeringFactor,
+              bool isPaused);
 
   BoidCluster highestCluster();
 

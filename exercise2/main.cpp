@@ -40,7 +40,8 @@ struct State_ {
   Predator *p;
 };
 
-void updateGui(State_&, float&, float&, float&, float&, float&, float&, float);
+void updateGui(State_ &, float &, float &, float &, float &, float &, float &,
+               float &, float &, float);
 
 void glfw_callback_error_(int, char const *);
 
@@ -73,7 +74,7 @@ int main() try {
   glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 
-  glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 #if !defined(__APPLE__)
   // Most platforms will support OpenGL 4.3
@@ -123,16 +124,14 @@ int main() try {
   if (!gladLoadGLLoader((GLADloadproc)&glfwGetProcAddress))
     throw Error("gladLoadGLLoader() failed - cannot load GL API!");
 
-  /*
-  // print out specs
+    // print out specs
   std::printf("RENDERER %s\n", glGetString(GL_RENDERER));
   std::printf("VENDOR %s\n", glGetString(GL_VENDOR));
   std::printf("VERSION %s\n", glGetString(GL_VERSION));
   std::printf("SHADING_LANGUAGE_VERSION %s\n",
-              glGetString(GL_SHADING_LANGUAGE_VERSION));
-  */
+			  glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-  // Debug output
+    // Debug output
 #if !defined(NDEBUG)
   setup_gl_debug_output();
 #endif // ~ !NDEBUG
@@ -152,7 +151,7 @@ int main() try {
   // imgui setup
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO();
+  ImGuiIO &io = ImGui::GetIO();
   io.FontGlobalScale = 2.f;
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -183,13 +182,14 @@ int main() try {
 
   // boid default values
   float boidSpeed = 0.25f;
+  float boidVision = (5.f * M_PI) / 6.f;
   float diveSpeed = boidSpeed;
-  float predatorFactor = 1.f;
   float seperationFactor = 1.9f;
   float alignmentFactor = 0.7f;
   float cohesionFactor = 0.4f;
   float boundaryForce = 0.25f;
   float steeringFactor = 0.1f;
+  float predatorFactor = 0.25f;
 
   // Animation state
   auto last = Clock::now();
@@ -229,12 +229,13 @@ int main() try {
     timeElapsed += dt;
     last = now;
 
-    if(timeElapsed >= 1.f){
+    if (timeElapsed >= 1.f) {
       displayFps = 1.f / dt;
       timeElapsed = 0.f;
     }
 
-    updateGui(state, boidSpeed, seperationFactor, alignmentFactor, cohesionFactor, boundaryForce, steeringFactor, displayFps);
+    updateGui(state, boidVision, boidSpeed, seperationFactor, alignmentFactor,
+              cohesionFactor, boundaryForce, steeringFactor, predatorFactor, displayFps);
 
     // Draw scene
     OGL_CHECKPOINT_DEBUG();
@@ -242,28 +243,12 @@ int main() try {
     // TODO: draw frame
     glClear(GL_COLOR_BUFFER_BIT);
 
-    bs.update(
-	      state.prog,
-	      p.position,
-	      dt,
-	      boidSpeed,
-	      predatorFactor,
-	      seperationFactor,
-	      alignmentFactor,
-	      cohesionFactor,
-	      boundaryForce,
-	      steeringFactor,
-	      state.isPaused
-	      );
+    bs.update(state.prog, p.position, dt, boidSpeed, boidVision, predatorFactor,
+              seperationFactor, alignmentFactor, cohesionFactor, boundaryForce,
+              steeringFactor, state.isPaused);
 
-    p.update(
-	     bs,
-	     dt,
-	     boidSpeed * 1.05f,
-	     diveSpeed,
-	     boundaryForce * 3.f,
-	     state.isPaused
-	     );
+    p.update(bs, dt, boidSpeed * 1.05f, diveSpeed, boundaryForce * 4.f,
+             state.isPaused);
 
     // render gui window
     ImGui::Render();
@@ -291,52 +276,46 @@ void glfw_callback_error_(int aErrNum, char const *aErrDesc) {
   std::fprintf(stderr, "GLFW error: %s (%d)\n", aErrDesc, aErrNum);
 }
 
-  void updateGui(State_ &state,
-		 float &boidSpeed,
-		 float &seperationFactor,
-		 float &alignmentFactor,
-		 float &cohesionFactor,
-		 float &boundaryForce,
-		 float &steeringFactor,
-		 float fps 
-		 ){
-    ImGui::Begin("Boid Settings");
+void updateGui(State_ &state, float &boidVision, float &boidSpeed,
+               float &seperationFactor, float &alignmentFactor,
+               float &cohesionFactor, float &boundaryForce,
+               float &steeringFactor, float &predatorFactor, float fps) {
+  ImGui::Begin("Boid Settings");
+  ImGui::Text("%.1f FPS", fps);
 
-    // add pause button
-    if(ImGui::Button("Pause")){
-      state.isPaused = !state.isPaused;
-    }
+  // add pause button
+  if (ImGui::Button("Pause")) {
+    state.isPaused = !state.isPaused;
+  }
+  ImGui::SameLine();
+  // add reset button
+  if (ImGui::Button("Reset")) {
+    state.bs->resetPositions();
+    state.p->resetPosition();
+  }
 
-    // add reset button
-    if(ImGui::Button("Reset")){
-      state.bs->resetPositions();
-      state.p->resetPosition();
-    }
-
-    ImGui::Text("%.1f FPS", fps);
-    ImGui::Text("Boid Properties");
-
-    // implement boid vision angle
-    ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 3.f);
-    ImGui::Text("Boid Rules");
-    ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 10.0f);
-    ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 3.0f);
-    ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 3.0f);
-    ImGui::SliderFloat("Steering Factor", &steeringFactor, 0.0f, 3.f);
-    ImGui::Text("Misc");
-    ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 3.f);
-    ImGui::End();
-
-    // add predator bars
+  ImGui::Text("Boid Properties");
+  // implement boid vision angle
+  ImGui::SliderFloat("Boid Speed", &boidSpeed, 0.0f, 3.f);
+  ImGui::SliderFloat("Boid Vision Angle", &boidVision, 0.0f, 2 * M_PI);
+  ImGui::Text("Boid Rules");
+  ImGui::SliderFloat("Seperation Factor", &seperationFactor, 0.0f, 10.0f);
+  ImGui::SliderFloat("Alignment Factor", &alignmentFactor, 0.0f, 3.0f);
+  ImGui::SliderFloat("Cohesion Factor", &cohesionFactor, 0.0f, 3.0f);
+  ImGui::SliderFloat("Steering Factor", &steeringFactor, 0.0f, 3.f);
+  ImGui::Text("Misc");
+  ImGui::SliderFloat("Boundary Factor", &boundaryForce, 0.0f, 3.f);
+  ImGui::SliderFloat("Predator Factor", &predatorFactor, 0.0f, 3.f);
+  ImGui::End();
 }
 
 void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
   if (GLFW_KEY_ESCAPE == aKey && GLFW_PRESS == aAction) {
-	/*
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-	*/
+    /*
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    */
     glfwSetWindowShouldClose(aWindow, GLFW_TRUE);
     return;
   }
@@ -347,8 +326,8 @@ void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
       if (state->prog) {
         try {
           state->prog->reload();
-	  state->bs->resetPositions();
-	  state->p->resetPosition();
+          state->bs->resetPositions();
+          state->p->resetPosition();
           std::fprintf(stderr, "Shaders reloaded and recompiled.\n");
 
         } catch (std::exception const &eErr) {
@@ -359,7 +338,7 @@ void glfw_callback_key_(GLFWwindow *aWindow, int aKey, int, int aAction, int) {
       }
     }
 
-    if(GLFW_KEY_P == aKey && GLFW_PRESS == aAction){
+    if (GLFW_KEY_P == aKey && GLFW_PRESS == aAction) {
       state->isPaused = !state->isPaused;
     }
   }

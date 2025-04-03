@@ -15,9 +15,10 @@ Boid::Boid() {
 
 Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
                     ShaderProgram *prog, float dt, float boidSpeed,
-                    float predatorFactor, float seperationFactor,
-                    float alignmentFactor, float cohesionFactor,
-                    float boundaryForce, float steeringFactor, bool isPaused) {
+                    float boidVision, float predatorFactor,
+                    float seperationFactor, float alignmentFactor,
+                    float cohesionFactor, float boundaryForce,
+                    float steeringFactor, bool isPaused) {
 
   // calculate distances between screen boundaries
   // origin is defined at the center of the screen
@@ -79,7 +80,7 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
     float da = dot(dv, velocity) / (neighbourDistance * length(velocity));
 
     // TODO: put an angle here for boid sight range
-    if (neighbourDistance <= boidRange && acos(da) < visionAngle) {
+    if (neighbourDistance <= boidRange && acos(da) < boidVision) {
       neighbours.emplace_back(b);
 
       // if its really close, we gotta avoid it
@@ -100,8 +101,8 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
   // predator: ensure that boids move away from predator above all else
   float predatorDistance = euclidean(position, predatorPosition);
 
-  if(predatorDistance <= 40.f)
-	acceleration += normalize(position - predatorPosition) * boundaryForce;
+  if (predatorDistance <= 40.f)
+    acceleration += normalize(position - predatorPosition) * boundaryForce;
 
   // seperation: ensure that boids steer to avoid their flock mates
   Vec2f averageSeperation = {0.f, 0.f};
@@ -181,7 +182,6 @@ Mat33f Boid::update(std::vector<Boid> &boids, Vec2f predatorPosition,
   return boidTransform;
 }
 
-
 Vec2f BoidCluster::averageCenter() {
   Vec2f clusterCenter = {0.f, 0.f};
 
@@ -194,11 +194,11 @@ Vec2f BoidCluster::averageCenter() {
   return clusterCenter;
 }
 
-float BoidCluster::clusterRadius(){
+float BoidCluster::clusterRadius() {
   Vec2f cluster = averageCenter();
 
-  if(edgeBoids.size() <= 0)
-	return 0.f;
+  if (edgeBoids.size() <= 0)
+    return 0.f;
 
   Boid edgeBoid = edgeBoids[0];
   float radius = euclidean(cluster, edgeBoid.position);
@@ -224,7 +224,7 @@ BoidSystem::BoidSystem(int N) : boids(N) {
   for (auto &b : boids) {
     // assign initial position of boid for reset
     initialPositions.emplace_back(b.position);
-    
+
     // assign an ID to identify each boid
     b.id = boidID;
     boidID++;
@@ -244,14 +244,14 @@ BoidSystem::BoidSystem(int N) : boids(N) {
   glEnableVertexAttribArray(0);
 }
 
-void BoidSystem::resetPositions(){
+void BoidSystem::resetPositions() {
   for (auto &b : boids) {
     b.position = b.initialPosition;
   }
 }
 
 void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
-                        float boidSpeed, float predatorFactor,
+                        float boidSpeed, float boidVision, float predatorFactor,
                         float seperationFactor, float alignmentFactor,
                         float cohesionFactor, float boundaryForce,
                         float steeringFactor, bool isPaused) {
@@ -266,9 +266,9 @@ void BoidSystem::update(ShaderProgram *prog, Vec2f predatorPosition, float dt,
   for (auto &b : boids) {
     // calculating transformation
     Mat33f transformation =
-        b.update(boids, predatorPosition, prog, dt, boidSpeed, predatorFactor,
-                 seperationFactor, alignmentFactor, cohesionFactor,
-                 boundaryForce, steeringFactor, isPaused);
+        b.update(boids, predatorPosition, prog, dt, boidSpeed, boidVision,
+                 predatorFactor, seperationFactor, alignmentFactor,
+                 cohesionFactor, boundaryForce, steeringFactor, isPaused);
 
     // 3 vertex points to be added to VBO
     for (auto &v : b.boidPositions) {
