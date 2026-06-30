@@ -81,7 +81,7 @@ project "bpm"
 	}
 
 	kind "ConsoleApp"
-	location "exercise2"
+	location "bpm"
 
 	files( sources )
 

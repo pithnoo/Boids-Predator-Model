@@ -62,7 +62,7 @@ endif
 bpm: vmlib support x-stb x-glad x-glfw x-imgui bpm-shaders
 ifneq (,$(bpm_config))
 	@echo "==== Building bpm ($(bpm_config)) ===="
-	@${MAKE} --no-print-directory -C exercise2 -f Makefile config=$(bpm_config)
+	@${MAKE} --no-print-directory -C bpm -f Makefile config=$(bpm_config)
 endif
 
 bpm-shaders:
@@ -88,7 +88,7 @@ clean:
 	@${MAKE} --no-print-directory -C third_party -f x-imgui.make clean
 	@${MAKE} --no-print-directory -C third_party -f x-glad.make clean
 	@${MAKE} --no-print-directory -C third_party -f x-glfw.make clean
-	@${MAKE} --no-print-directory -C exercise2 -f Makefile clean
+	@${MAKE} --no-print-directory -C bpm -f Makefile clean
 	@${MAKE} --no-print-directory -C assets/shaders -f Makefile clean
 	@${MAKE} --no-print-directory -C support -f Makefile clean
 	@${MAKE} --no-print-directory -C vmlib -f Makefile clean
