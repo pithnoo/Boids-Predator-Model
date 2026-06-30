@@ -8,7 +8,7 @@ workspace "COMP3811-glcode"
 	flags "NoPCH"
 	flags "MultiProcessorCompile"
 
-	startproject "exercise2"
+	startproject "bpm"
 
 	debugdir "%{wks.location}"
 	objdir "_build_/%{cfg.buildcfg}-%{cfg.platform}-%{cfg.toolset}"
@@ -72,12 +72,12 @@ workspace "COMP3811-glcode"
 include "third_party"
 
 -- Projects
-project "exercise2"
+project "bpm"
 	local sources = { 
-		"exercise2/**.cpp",
-		"exercise2/**.hpp",
-		"exercise2/**.hxx",
-		"exercise2/**.inl"
+		"src/**.cpp",
+		"src/**.hpp",
+		"src/**.hxx",
+		"src/**.inl"
 	}
 
 	kind "ConsoleApp"
@@ -85,7 +85,7 @@ project "exercise2"
 
 	files( sources )
 
-	dependson "exercise2-shaders"
+	dependson "bpm-shaders"
 
 	links "vmlib"
 	links "support"
@@ -95,18 +95,18 @@ project "exercise2"
 	links "x-glfw"
 	links "x-imgui"
 
-project "exercise2-shaders"
+project "bpm-shaders"
 	local shaders = { 
-		"assets/ex2/*.vert",
-		"assets/ex2/*.frag",
-		"assets/ex2/*.geom",
-		"assets/ex2/*.tesc",
-		"assets/ex2/*.tese",
-		"assets/ex2/*.comp"
+		"assets/shaders/*.vert",
+		"assets/shaders/*.frag",
+		"assets/shaders/*.geom",
+		"assets/shaders/*.tesc",
+		"assets/shaders/*.tese",
+		"assets/shaders/*.comp"
 	}
 
 	kind "Utility"
-	location "assets/ex2"
+	location "assets/shaders"
 
 	files( shaders )
 
