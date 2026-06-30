@@ -3,7 +3,7 @@ BPM, also known as the Boids Predator Model, aims to serve as a re-implementatio
 # Installation
 The project has currently only been tested on Linux. To install this project first clone the repository:
 ```bash
-git clone git@github.com:uol-feps-soc-comp3931-project-2425/individual-project-sc22oc.git
+git clone git@github.com:pithnoo/Boids-Predator-Model.git
 ```
 Then compile and run the program in its release build:
 ```bash
